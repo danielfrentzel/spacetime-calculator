@@ -1,4 +1,4 @@
-from calc_hours import HourCalculator
+from hour_calculator import HourCalculator
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from string import Template
 from urllib.parse import urlparse, parse_qs
