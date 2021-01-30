@@ -1,3 +1,4 @@
+import math
 import sys
 
 """
@@ -39,6 +40,7 @@ class HourCalculator(object):
         self.time_input = time_input
         self.hours = {}
         self.charges = {}
+        self.breaks = []
 
     def _format_ranges(self, ranges):
         formatted_ranges = []
@@ -114,7 +116,14 @@ class HourCalculator(object):
                 raise RuntimeError('Double charging or invalid range: ' + str(time[0]) + '-' + str(last_time))
 
             if last_time and last_time != time[0]:
-                print('break: ' + str(round(last_time % 12, 3)) + '-' + str(round(time[0] % 12, 3)) + ' == ' + str(round(time[0] - last_time, 3)))
+                # print('break: ' + str(round(last_time % 12, 3)) + '-' + str(round(time[0] % 12, 3)) + ' == ' + str(round(time[0] - last_time, 3)))
+                break_start = round(last_time % 12, 3) if round(last_time % 12, 0) != 0 else round(last_time, 3)
+                break_end = round(time[0] % 12, 3) if round(time[0] % 12, 0) != 0 else round(time[0], 3)
+                break_start = self._frac_hours_to_minutes(break_start)
+                break_end = self._frac_hours_to_minutes(break_end)
+                break_dur = str(round(time[0] - last_time, 2))
+                self.breaks.append([break_start, break_end, break_dur])
+                print('break: ' + break_start + '-' + break_end + ' == ' + break_dur)
 
             if len(self.hours[nxt_chg]) > 1:
                 self.hours[nxt_chg] = self.hours[nxt_chg][1:]
@@ -127,6 +136,9 @@ class HourCalculator(object):
                 self.charges[nxt_chg] += duration
             else:
                 self.charges[nxt_chg] = duration
+
+    def _frac_hours_to_minutes(self, frac_hours):
+        return str(math.floor(frac_hours)) + ':' + str(format(round((frac_hours % 1) * 60), '02d'))
 
     def calculate(self, cli=False):
         self._parse_hour_input()
@@ -147,7 +159,8 @@ class HourCalculator(object):
             print('total: ' + str(round(total, 1)))
 
         hours['$total'] = round(total, 1)
-        return hours
+        print(self.breaks)
+        return hours, self.breaks
 
 
 if __name__ == '__main__':

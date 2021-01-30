@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>SpaceTime Calculator</title>
+    </head>
+    <body>
+
+        <h1>Help</h1>
+        <a href="{{ url_for('index') }}">Home</a>
+        <br>
+        <pre>
+This tool is intended to be used to sum up intervals of time worked on different
+charge numbers. It will notify of breaks taken throughout the day and invalid
+time entries (overlapping entries or non ordered entries).
+
+The time ranges are required to be dashed intervals, comma separated and sorted.
+An identifier, followed by a space is required, at the beginning of each time
+entry line.
+
+Time can be passed in with minutes or frational hours. The fractional hours
+will be calculated from minutes with percision through the summation, but
+rounded to the nearest tenth for the total. Each charge number will be displayed
+with hundredths percision as to not short the employee any hours by pre rounding
+(ie. 0.04 + 0.04 = .08 ~= 0.1)
+
+    Example time input:
+
+        oh 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6
+        c 8:30-9, 9:30-11, 1-1:42, 3:12-4:12
+
+        or
+
+        oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6
+        c 8.5-9, 9.5-11, 1-1.7, 3.2-4.2
+
+    Example output:
+
+        totals
+        c == 3.7 hrs
+        oh == 6.3 hrs
+        total: 10.0
+
+        or
+
+        breaks
+        12:00-1:00 == 1.0 hr
+
+        totals
+        oh == 4.0 hr
+        total: 4.0 hr
+
+
+If you notice a calculation error, please <a href="mailto:danielfrentzel@gmail.com">contact</a> the maintainer with the time
+input.
+        </pre>
+
+</html>

@@ -7,6 +7,9 @@
     <body>
 
         <h1>SpaceTime Calculator</h1>
+        <a href="{{ url_for('help') }}">Help</a>
+        <br>
+        <br>
         <label>Time input</label>
 
         <form action="" method="post">
@@ -24,9 +27,18 @@
         </form>
     </body>
 
+    {% if breaks %}
+        <h4>breaks</h4>
+        {% for break in breaks %}
+            <p>{{ break[0] }}-{{ break[1] }} == {{ break[2] }} hr<br></p>
+        {% endfor %}
+        <br>
+    {% endif %}
+
     {% if calculated_hours %}
+        <h4>totals</h4>
         {% for chg_hrs in calculated_hours %}
-            <p><b>{{ chg_hrs[0] }}</b> {{ chg_hrs[1] }}</p>
+            <p>{{ chg_hrs[0] }} {{ chg_hrs[1] }} hr</p>
         {% endfor %}
     {% endif %}
 

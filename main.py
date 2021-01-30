@@ -13,25 +13,30 @@ def index():
 def index_post():
     time_input = request.form['time_input']
     try:
-        hours = HourCalculator(time_input).calculate()
+        hours, breaks = HourCalculator(time_input).calculate()
         total = hours['$total']
         del hours['$total']
 
         # todo
         # keep order
-        # display breaks
+        # display breaks (in minutes)
 
         calculated_hours = []
         for chg, hrs in hours.items():
-            calculated_hours.append([chg, hrs])
+            calculated_hours.append([chg + ' ==', hrs])
 
-        calculated_hours.append(['total', total])
+        calculated_hours.append(['total:', total])
         print(calculated_hours)
 
     except ValueError as e:
         print(e)
         calculated_hours = [['Invalid time input', '']]
-    return render_template('index.html', time_input=time_input, calculated_hours=calculated_hours)
+    return render_template('index.html', time_input=time_input, breaks=breaks, calculated_hours=calculated_hours)
+
+
+@app.route('/help')
+def help():
+    return render_template('help.html')
 
 
 if __name__ == '__main__':
