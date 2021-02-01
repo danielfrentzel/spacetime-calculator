@@ -24,6 +24,11 @@ rounded to the nearest tenth for the total. Each charge number will be displayed
 with hundredths percision as to not short the employee any hours by pre rounding
 (ie. 0.04 + 0.04 = .08 ~= 0.1)
 
+Time can also be passed as military time to specify pm times. This may be
+required in edge cases as shown in the third example. This edge case could be
+solved by requiring charge numbers to also be time sorted, but the current
+implementation accepts this sacrafice for ease of noting time through the day.
+
     Example time input:
 
         oh 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6
@@ -33,6 +38,12 @@ with hundredths percision as to not short the employee any hours by pre rounding
 
         oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6
         c 8.5-9, 9.5-11, 1-1.7, 3.2-4.2
+
+        or
+
+        c 8-12, 4-5
+        oh 12-4
+        other 18-21
 
     Example output:
 
@@ -49,6 +60,14 @@ with hundredths percision as to not short the employee any hours by pre rounding
         totals
         oh == 4.0 hr
         total: 4.0 hr
+
+        or
+
+        totals
+        c == 5.0 hr
+        oh == 4.0 hr
+        other == 3.0 hr
+        total: 12.0 hr
 
 
 If you notice a calculation error, please <a href="mailto:danielfrentzel@gmail.com">contact</a> the maintainer with the time

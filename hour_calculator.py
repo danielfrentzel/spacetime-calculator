@@ -74,6 +74,7 @@ class HourCalculator(object):
         # for charge_data in raw.split('\n'):
         for charge_data in self.time_input.splitlines():
             try:
+                charge_data = charge_data.strip().rstrip(',')
                 space = charge_data.find(' ')
                 ranges = [hr.strip() for hr in charge_data[space + 1:].split(',')]
                 ranges = self._format_ranges(ranges)
@@ -96,14 +97,15 @@ class HourCalculator(object):
                 if not afternoon:
                     mil_data.append(time)
                 else:
-                    if time[1] < time[0]:
+                    if time[1] < time[0] and time[1] < 12:
                         mil_data.append([time[0], time[1] + 12])
                     else:
-                        mil_data.append([time[0] + 12, time[1] + 12])
+                        mil_data.append([time[0] + 12 if time[0] < 12 else time[0],
+                                         time[1] + 12 if time[1] < 12 else time[1]])
 
             self.hours[code] = mil_data
 
-        # print('mil times ' + str(hours))
+        # print('mil times ' + str(self.hours))
 
     def _calculate_charges(self):
         last_time = None
@@ -171,3 +173,14 @@ if __name__ == '__main__':
     except IndexError as e:
         print('Example usage:\n    python calc_hours.py "oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n    c 8.5-9, 9.5-11, 1-1.7, 3.2-4.2"\n')
         raise e
+
+    # Tests
+    """
+    Fails:
+
+    c 8-12, 4-7
+    other 12-4, 18-21
+
+    Pass:
+
+    """

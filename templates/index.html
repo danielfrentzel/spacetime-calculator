@@ -36,10 +36,15 @@
     {% endif %}
 
     {% if calculated_hours %}
-        <h4>totals</h4>
-        {% for chg_hrs in calculated_hours %}
-            <p>{{ chg_hrs[0] }} {{ chg_hrs[1] }} hr</p>
-        {% endfor %}
+        {% if success %}
+            <h4>totals</h4>
+            {% for chg_hrs in calculated_hours %}
+                <p>{{ chg_hrs[0] }} {{ chg_hrs[1] }} hr</p>
+            {% endfor %}
+        {% else %}
+            <h4>Invalid time input</h4>
+            <p>{{ calculated_hours }}</p>
+        {% endif %}
     {% endif %}
 
 </html>
