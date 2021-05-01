@@ -33,7 +33,7 @@ displayed with percision as to not short the employee any hours by pre rounding
 
 class HourCalculator(object):
     def __init__(self, time_input):
-        self.time_input = time_input
+        self.time_input = time_input.strip()
         self.hours = {}
         self.charges = {}
         self.breaks = []
@@ -105,6 +105,21 @@ class HourCalculator(object):
 
         # print('mil times ' + str(self.hours))
 
+    def _convert_ordered_starts(self):
+        print('hours:', self.hours)
+        afternoon = False
+        last_start = None
+        for code, data in self.hours.items():
+            if not last_start:
+                last_start = data[0][0]
+            if last_start > data[0][0]:
+                afternoon = True
+            if afternoon:
+                data[0] = [data[0][0] + 12, data[0][1]]
+                # self.hours[code] = [[data[0], data[1]], data[1:]]
+                print('data', data)
+                # self.hours[code] = data
+
     def _calculate_charges(self):
         last_time = None
         while self.hours:
@@ -113,7 +128,8 @@ class HourCalculator(object):
             duration = round(time[1] - time[0], 3)
 
             if last_time and time[0] < last_time:
-                raise RuntimeError('Double charging or invalid range: ' + str(time[0]) + '-' + str(last_time))
+                raise RuntimeError('Double charging or invalid range: ' + str(time[0]) + '-' + str(last_time)
+                                   + '. Ensure lines starting with a PM time are written in 24 hour format.')
 
             if last_time and last_time != time[0]:
                 break_start = round(last_time % 12, 3) if round(last_time % 12, 0) != 0 else round(last_time, 3)
@@ -136,10 +152,21 @@ class HourCalculator(object):
     def _frac_hours_to_minutes(self, frac_hours):
         return str(math.floor(frac_hours)) + ':' + str(format(round((frac_hours % 1) * 60), '02d'))
 
-    def calculate(self, cli=False):
-        self._parse_hour_input()
-        self._convert_mil_times()
-        self._calculate_charges()
+    def __str__(self):
+        return '\n'.join(['hours: ' + str(self.hours), 'charges: ' + str(self.charges), 'breaks: ' + str(self.breaks)])
+
+    def calculate(self, ordered=False, cli=False):
+        if ordered:
+            if cli:
+                print('Calculating ordered.')
+            self._parse_hour_input()
+            self._convert_ordered_starts()
+            self._convert_mil_times()
+            self._calculate_charges()
+        else:
+            self._parse_hour_input()
+            self._convert_mil_times()
+            self._calculate_charges()
 
         hours = {}
 
@@ -162,21 +189,10 @@ class HourCalculator(object):
 if __name__ == '__main__':
     try:
         raw = sys.argv[1]
-        calc = HourCalculator(raw)
-        calc.calculate(cli=True)
+        HourCalculator(raw).calculate(ordered=False, cli=True)
+        print()
+        HourCalculator(raw).calculate(ordered=True, cli=True)
     except IndexError as e:
-        print(
-            'Example usage:\n    python calc_hours.py "oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n    c 8.5-9, 9.5-11, 1-1.7, 3.2-4.2"\n'
-        )
+        print('Example usage:\n    python calc_hours.py "oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n    c 8.5-9, 9.5-11, \
+               1-1.7, 3.2-4.2"\n')
         raise e
-
-    # Tests
-    """
-    Fails:
-
-    c 8-12, 4-7
-    other 12-4, 18-21
-
-    Pass:
-
-    """
