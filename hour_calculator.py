@@ -1,6 +1,5 @@
 import math
 import sys
-
 """
 This script can be used to sum up intervals of time worked on different
 charge numbers. This tool will notify of breaks taken though out the
@@ -14,8 +13,6 @@ fractional hours will be calculated with percision through the summation,
 but rounded to the nearest tenth for the total. Each charge number will be
 displayed with percision as to not short the employee any hours by pre rounding
 (ie. 0.04 + 0.04 = .08 ~= 0.1)
-
-Passing minutes in has not been thoroughly tested
 
     Example time entries:
         oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6
@@ -35,7 +32,6 @@ Passing minutes in has not been thoroughly tested
 
 
 class HourCalculator(object):
-
     def __init__(self, time_input):
         self.time_input = time_input
         self.hours = {}
@@ -80,7 +76,9 @@ class HourCalculator(object):
                 ranges = self._format_ranges(ranges)
                 times = [[float(rng.split('-')[0]), float(rng.split('-')[1])] for rng in ranges]
                 # hours[charge_data[:space]] = [hr.strip() for hr in charge_data[space + 1:].split(',')]
-                self.hours[charge_data[:space]] = times
+                str_id = charge_data[:space]
+                self.hours[str_id] = times
+                self.charges[str_id] = 0
             except ValueError as e:
                 raise e
 
@@ -100,8 +98,8 @@ class HourCalculator(object):
                     if time[1] < time[0] and time[1] < 12:
                         mil_data.append([time[0], time[1] + 12])
                     else:
-                        mil_data.append([time[0] + 12 if time[0] < 12 else time[0],
-                                         time[1] + 12 if time[1] < 12 else time[1]])
+                        mil_data.append(
+                            [time[0] + 12 if time[0] < 12 else time[0], time[1] + 12 if time[1] < 12 else time[1]])
 
             self.hours[code] = mil_data
 
@@ -118,7 +116,6 @@ class HourCalculator(object):
                 raise RuntimeError('Double charging or invalid range: ' + str(time[0]) + '-' + str(last_time))
 
             if last_time and last_time != time[0]:
-                # print('break: ' + str(round(last_time % 12, 3)) + '-' + str(round(time[0] % 12, 3)) + ' == ' + str(round(time[0] - last_time, 3)))
                 break_start = round(last_time % 12, 3) if round(last_time % 12, 0) != 0 else round(last_time, 3)
                 break_end = round(time[0] % 12, 3) if round(time[0] % 12, 0) != 0 else round(time[0], 3)
                 break_start = self._frac_hours_to_minutes(break_start)
@@ -134,10 +131,7 @@ class HourCalculator(object):
 
             last_time = time[1]
 
-            if nxt_chg in self.charges:
-                self.charges[nxt_chg] += duration
-            else:
-                self.charges[nxt_chg] = duration
+            self.charges[nxt_chg] += duration
 
     def _frac_hours_to_minutes(self, frac_hours):
         return str(math.floor(frac_hours)) + ':' + str(format(round((frac_hours % 1) * 60), '02d'))
@@ -171,7 +165,9 @@ if __name__ == '__main__':
         calc = HourCalculator(raw)
         calc.calculate(cli=True)
     except IndexError as e:
-        print('Example usage:\n    python calc_hours.py "oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n    c 8.5-9, 9.5-11, 1-1.7, 3.2-4.2"\n')
+        print(
+            'Example usage:\n    python calc_hours.py "oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n    c 8.5-9, 9.5-11, 1-1.7, 3.2-4.2"\n'
+        )
         raise e
 
     # Tests
