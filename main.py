@@ -64,6 +64,9 @@ def index_post():
     print('calculated_hours:    ', calculated_hours)
     print('calculated_hours_ord:', calculated_hours_ord)
     if str(calculated_hours) == str(calculated_hours_ord):
+        # If unordered has breaks, but ordered doesn't, assume ordered.
+        if breaks and not breaks_ord:
+            breaks = breaks_ord
         return render_template('index.html',
                                success=success,
                                time_input=time_input,

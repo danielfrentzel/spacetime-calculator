@@ -82,6 +82,17 @@ class HourCalculator(object):
             except ValueError as e:
                 raise e
 
+    def _convert_ordered_starts(self):
+        afternoon = False
+        last_start = None
+        for code, data in self.hours.items():
+            if not last_start:
+                last_start = data[0][0]
+            if last_start > data[0][0]:
+                afternoon = True
+            if afternoon:
+                data[0] = [data[0][0] + 12, data[0][1]]
+
     def _convert_mil_times(self):
         for code, data in self.hours.items():
             mil_data = []
@@ -105,21 +116,6 @@ class HourCalculator(object):
 
         # print('mil times ' + str(self.hours))
 
-    def _convert_ordered_starts(self):
-        print('hours:', self.hours)
-        afternoon = False
-        last_start = None
-        for code, data in self.hours.items():
-            if not last_start:
-                last_start = data[0][0]
-            if last_start > data[0][0]:
-                afternoon = True
-            if afternoon:
-                data[0] = [data[0][0] + 12, data[0][1]]
-                # self.hours[code] = [[data[0], data[1]], data[1:]]
-                print('data', data)
-                # self.hours[code] = data
-
     def _calculate_charges(self):
         last_time = None
         while self.hours:
@@ -138,7 +134,7 @@ class HourCalculator(object):
                 break_end = self._frac_hours_to_minutes(break_end)
                 break_dur = str(round(time[0] - last_time, 2))
                 self.breaks.append([break_start, break_end, break_dur])
-                print('break: ' + break_start + '-' + break_end + ' == ' + break_dur)
+                # print('break: ' + break_start + '-' + break_end + ' == ' + break_dur)
 
             if len(self.hours[nxt_chg]) > 1:
                 self.hours[nxt_chg] = self.hours[nxt_chg][1:]
