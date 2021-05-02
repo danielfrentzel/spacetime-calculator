@@ -9,27 +9,17 @@
         <h1>Help</h1>
         <a href="{{ url_for('index') }}">Home</a>
         <br>
-        <pre>
-This tool is intended to be used to sum up intervals of time worked on different
-charge numbers. It will notify of breaks taken throughout the day and invalid
-time entries (overlapping entries or non ordered entries).
+        <div style="width:90ch">
+        <pre style="white-space: pre-wrap;">
+This tool is intended to be used to sum up intervals of time worked on different charge numbers. It will notify of breaks taken throughout the day and invalid time entries (overlapping entries or non ordered entries).
 
-The time ranges are required to be dashed intervals, comma separated and sorted.
-An identifier, followed by a space is required, at the beginning of each time
-entry line.
+The time ranges in every line are required to be dashed intervals, comma separated and sorted. An identifier, followed by a space is required, at the beginning of each time entry line.
 
-Time can be passed in with minutes or frational hours. The fractional hours
-will be calculated from minutes with percision through the summation, but
-rounded to the nearest tenth for the total. Each charge number will be displayed
-with hundredths percision as to not short the employee any hours by pre rounding
-(ie. 0.04 + 0.04 = .08 ~= 0.1)
+Time can be passed in with minutes or frational hours. The fractional hours will be calculated from minutes with percision through the summation, but rounded to the nearest tenth for the total. Each charge number will be displayed with hundredths percision as to not short the employee any hours by pre rounding (ie. 0.04 + 0.04 = .08 ~= 0.1).
 
-Time can also be passed as military time to specify pm times. This may be
-required in edge cases as shown in the third example. This edge case could be
-solved by requiring charge numbers to also be time sorted, but the current
-implementation accepts this sacrafice for ease of noting time through the day.
+The calculation is done twice with different assumptions. The first assumption is that the time inputs are ordered by the first time in the line. The second assumption is that lines starting with a PM time are encoded with a 'p' or written in 24 hour format (ie. 'a 1p-2' or 'a 13-2'). If these calulations compute different results for breaks or totals, both results are displayed. It is recommended to format inputs according to one of the calculation methods.
 
-    Example time input:
+    Example time inputs:
 
         oh 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6
         c 8:30-9, 9:30-11, 1-1:42, 3:12-4:12
@@ -43,9 +33,15 @@ implementation accepts this sacrafice for ease of noting time through the day.
 
         c 8-12, 4-5
         oh 12-4
-        other 18-21
+        other 6p-9
 
-    Example output:
+        or
+
+        c 8-12, 4-5
+        oh 12-4
+        other 18-9
+
+    Example calculation outputs:
 
         totals
         c == 3.7 hrs
@@ -70,8 +66,10 @@ implementation accepts this sacrafice for ease of noting time through the day.
         total: 12.0 hr
 
 
-If you notice a calculation error, please <a href="mailto:danielfrentzel@gmail.com">contact</a> the maintainer with the time
-input.
+If you notice a calculation error, please <a href="mailto:danielfrentzel@gmail.com">contact</a> the maintainer with the time input.
+
+<a href="https://github.com/danielfrentzel/spacetime-calculator">Source</a>
         </pre>
+        </div>
 
 </html>

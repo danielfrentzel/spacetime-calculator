@@ -27,21 +27,61 @@
     <table style="text-align:left;">
         <tr style="font-size:120%">
             {% if double_results %}
-                <th>Unordered Calculation</th>
                 <th>Ordered Calculation</th>
+                <th>Unordered Calculation</th>
             {% endif %}
         </tr>
         <tr style="vertical-align:top;">
-            <td style="width:400px;">
-                {% if breaks %}
+            {% if breaks_ord %}
+                <td style="width:400px;">
                     <h5>Breaks</h5>
-                    {% for break in breaks %}
+                    {% if not double_results and double_breaks %}
+                        <h6>Ordered Calculation</h6>
+                    {% endif %}
+                    {% for break in breaks_ord %}
                         <p>{{ break[0] }}-{{ break[1] }} = {{ break[2] }} hr<br></p>
                     {% endfor %}
+                    {% if not double_results and double_breaks %}
+                        <h5>or</h5>
+                        <h6>Unordered Calculation</h6>
+                        {% for break in breaks %}
+                            <p>{{ break[0] }}-{{ break[1] }} = {{ break[2] }} hr<br></p>
+                        {% endfor %}
+                    {% endif %}
                     <br>
-                {% endif %}
+                </td>
+            {% endif %}
 
-                {% if calculated_hours %}
+            {% if double_results %}
+                <td style="width:400px;">
+                    {% if breaks %}
+                        <h5>Breaks</h5>
+                        {% for break in breaks %}
+                            <p>{{ break[0] }}-{{ break[1] }} = {{ break[2] }} hr<br></p>
+                        {% endfor %}
+                        <br>
+                    {% endif %}
+                </td>
+            {% endif %}
+        </tr>
+        <tr>
+            {% if calculated_hours_ord %}
+                <td>
+                    {% if success_ord %}
+                        <h5>Totals</h5>
+                        {% if not double_results and double_breaks %}
+                        {% endif %}
+                        {% for chg_hrs in calculated_hours_ord %}
+                            <p>{{ chg_hrs[0] }} {{ chg_hrs[1] }} hr</p>
+                        {% endfor %}
+                    {% else %}
+                        <h5>Invalid time input</h5>
+                        <p>{{ calculated_hours_ord }}</p>
+                    {% endif %}
+                </td>
+            {% endif %}
+            {% if double_results %}
+                <td>
                     {% if success %}
                         <h5>Totals</h5>
                         {% for chg_hrs in calculated_hours %}
@@ -51,36 +91,32 @@
                         <h5>Invalid time input</h5>
                         <p>{{ calculated_hours }}</p>
                     {% endif %}
-                {% endif %}
-            </td>
-
-            {% if double_results %}
-                <td style="width:400px;">
-                    {% if breaks_ord %}
-                        <h5>Breaks</h5>
-                        {% for break in breaks_ord %}
-                            <p>{{ break[0] }}-{{ break[1] }} = {{ break[2] }} hr<br></p>
-                        {% endfor %}
-                        <br>
-                    {% endif %}
-
-                    {% if calculated_hours_ord %}
-                        {% if success_ord %}
-                            <h5>Totals</h5>
-                            {% for chg_hrs in calculated_hours_ord %}
-                                <p>{{ chg_hrs[0] }} {{ chg_hrs[1] }} hr</p>
-                            {% endfor %}
-                        {% else %}
-                            <h5>Invalid time input</h5>
-                            <p>{{ calculated_hours_ord }}</p>
-                        {% endif %}
-                    {% endif %}
                 </td>
             {% endif %}
         </tr>
     </table>
 
     {% if double_results %}
-        <p style="margin-top:0;font-size:14px">* Ensure lines starting with a PM time are written in 24 hour format OR that entry lines are ordered by the first time in the line and use the corresponding calculation.</p>
+        <p style="margin-top:0;margin-bottom:0;font-size:14px;width:90ch;display:block">* Ensure the time input lines are ordered by the first time in the line OR lines starting with a PM time are encoded with a 'p' or written in 24 hour format and use the corresponding calculation. <button id='button' style="border:none;padding:0;background:none;text-decoration:underline;color:blue" onclick="expand()">More info</button></p>
     {% endif %}
+
+    <br>
+    <p id="more_info" style="margin-top:0;margin-bottom:0;font-size:14px;width:90ch;display:block;"></p>
+
+    <script>
+    function expand() {
+      var button = document.getElementById("button");
+      var more_info = document.getElementById("more_info");
+      if (button.innerHTML === "More info") {
+        button.innerHTML = "Less info";
+      } else {
+        button.innerHTML = "More info";
+      }
+      if (more_info.innerHTML === "") {
+        more_info.innerHTML = "The calculation is done twice with different assumptions. The first assumption is that the time inputs are ordered by the first time in the line. The second assumption is that lines starting with a PM time are encoded with a 'p' or written in 24 hour format (ie. 'a 1p-2' or 'a 13-2'). If these calulations compute different results for breaks or totals, both results are displayed. It is recommended to format inputs according to one of the calculation methods.";
+      } else {
+        more_info.innerHTML = "";
+      }
+    }
+    </script>
 </html>

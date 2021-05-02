@@ -43,12 +43,18 @@ class HourCalculator(object):
         for rng in ranges:
             formatted_range = []
             for time in rng.split('-'):
+                pm = False
+                if time[-1] == 'p':
+                    pm = True
+                if time[-1] == 'a':
+                    time = time[:-1]
                 if ':' in time:
                     tmp = time.split(':')
+                    tmp[0] = float(tmp[0][:-1]) + 12 if pm else float(tmp[0])
                     tmp[1] = round(float(tmp[1]) / 60, 3)
-                    formatted_range.append(str(float(tmp[0]) + tmp[1]))
+                    formatted_range.append(str(tmp[0] + tmp[1]))
                 else:
-                    formatted_range.append(time)
+                    formatted_range.append(str(float(time[:-1]) + 12) if pm else (time))
             formatted_ranges.append('-'.join(formatted_range))
 
         return formatted_ranges
@@ -70,6 +76,8 @@ class HourCalculator(object):
         # for charge_data in raw.split('\n'):
         for charge_data in self.time_input.splitlines():
             try:
+                if not charge_data:
+                    continue
                 charge_data = charge_data.strip().rstrip(',')
                 space = charge_data.find(' ')
                 ranges = [hr.strip() for hr in charge_data[space + 1:].split(',')]
@@ -121,18 +129,16 @@ class HourCalculator(object):
         while self.hours:
             nxt_chg = self._next_charge(self.hours)
             time = self.hours[nxt_chg][0]
-            duration = round(time[1] - time[0], 3)
+            duration = round(abs(time[1] - time[0]), 3)
 
             if last_time and time[0] < last_time:
                 raise RuntimeError('Double charging or invalid range: ' + str(time[0]) + '-' + str(last_time)
                                    + '. Ensure lines starting with a PM time are written in 24 hour format.')
 
             if last_time and last_time != time[0]:
-                break_start = round(last_time % 12, 3) if round(last_time % 12, 0) != 0 else round(last_time, 3)
-                break_end = round(time[0] % 12, 3) if round(time[0] % 12, 0) != 0 else round(time[0], 3)
-                break_start = self._frac_hours_to_minutes(break_start)
-                break_end = self._frac_hours_to_minutes(break_end)
-                break_dur = str(round(time[0] - last_time, 2))
+                break_start = self._frac_hours_to_minutes(round(last_time, 3))
+                break_end = self._frac_hours_to_minutes(round(time[0], 3))
+                break_dur = str(round(abs(time[0] - last_time), 2))
                 self.breaks.append([break_start, break_end, break_dur])
                 # print('break: ' + break_start + '-' + break_end + ' == ' + break_dur)
 
@@ -158,10 +164,12 @@ class HourCalculator(object):
             self._parse_hour_input()
             self._convert_ordered_starts()
             self._convert_mil_times()
+            # print('ordered:', self)
             self._calculate_charges()
         else:
             self._parse_hour_input()
             self._convert_mil_times()
+            # print('unordered:', self)
             self._calculate_charges()
 
         hours = {}
@@ -178,7 +186,6 @@ class HourCalculator(object):
             print('total: ' + str(round(total, 1)))
 
         hours['$total'] = round(total, 1)
-        print(self.breaks)
         return hours, self.breaks
 
 

@@ -7,11 +7,13 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    print('init index!')
     return render_template('index.html')
 
 
 @app.route('/', methods=['POST'])
 def index_post():
+    print('init index post!')
     time_input = request.form['time_input']
     try:
         hours, breaks = HourCalculator(time_input).calculate()
@@ -63,34 +65,40 @@ def index_post():
 
     print('calculated_hours:    ', calculated_hours)
     print('calculated_hours_ord:', calculated_hours_ord)
-    if str(calculated_hours) == str(calculated_hours_ord):
-        # If unordered has breaks, but ordered doesn't, assume ordered.
-        if breaks and not breaks_ord:
-            breaks = breaks_ord
-        return render_template('index.html',
-                               success=success,
-                               time_input=time_input,
-                               breaks=breaks,
-                               calculated_hours=calculated_hours,
-                               success_ord=success_ord,
-                               breaks_ord=breaks_ord,
-                               calculated_hours_ord=calculated_hours_ord,
-                               double_results=False)
-    else:
-        return render_template('index.html',
-                               success=success,
-                               time_input=time_input,
-                               breaks=breaks,
-                               calculated_hours=calculated_hours,
-                               success_ord=success_ord,
-                               breaks_ord=breaks_ord,
-                               calculated_hours_ord=calculated_hours_ord,
-                               double_results=True)
+
+    double_results = str(calculated_hours) != str(calculated_hours_ord)
+    double_breaks = str(breaks) != str(breaks_ord)
+    return render_template('index.html',
+                           success=success,
+                           time_input=time_input,
+                           breaks=format_breaks(breaks),
+                           calculated_hours=calculated_hours,
+                           success_ord=success_ord,
+                           breaks_ord=format_breaks(breaks_ord),
+                           calculated_hours_ord=calculated_hours_ord,
+                           double_results=double_results,
+                           double_breaks=double_breaks)
 
 
 @app.route('/help')
 def help():
     return render_template('help.html')
+
+
+def format_breaks(breaks):
+    if breaks is None:
+        return breaks
+    for brk in breaks:
+        for i in range(2):
+            hour = int(brk[i][:brk[i].find(':')])
+            if hour < 12:
+                brk[i] += 'a'
+            elif hour == 12:
+                brk[i] += 'p'
+            else:
+                brk[i] = str(int(brk[i][:brk[i].find(':')]) - 12) + brk[i][brk[i].find(':'):] + 'p'
+
+    return breaks
 
 
 if __name__ == '__main__':
