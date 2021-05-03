@@ -20,11 +20,11 @@
 
     <head>
         <meta charset="utf-8">
-        <title>SpaceTime Calculator</title>
+        <title>Spacetime Calculator</title>
     </head>
 
     <body>
-        <h1>SpaceTime Calculator</h1>
+        <h1>Spacetime Calculator</h1>
         <a style="color:white;" href="{{ url_for('help') }}">Help</a>
         <br>
         <br>
@@ -88,9 +88,11 @@
                         <h5>Totals</h5>
                         {% if not double_results and double_breaks %}
                         {% endif %}
-                        {% for chg_hrs in calculated_hours_ord %}
-                            <p>{{ chg_hrs[0] }} {{ chg_hrs[1] }} hr</p>
-                        {% endfor %}
+                        <div id=results>
+                            {% for chg_hrs in calculated_hours_ord %}
+                                <p>{{ chg_hrs[0] }} {{ chg_hrs[1] }} hr</p>
+                            {% endfor %}
+                        </div>
                     {% else %}
                         <h5>Invalid time input</h5>
                         <p>{{ calculated_hours_ord }}</p>
@@ -113,6 +115,9 @@
         </tr>
     </table>
 
+    {% if success_ord and not double_results %}
+        <!-- <button onclick="copyDivToClipboard()">Copy results and open spacetime</button> -->
+    {% endif %}
     {% if double_results %}
         <p style="margin-top:0;margin-bottom:0;font-size:14px;width:90ch;display:block">* Ensure the time input lines are ordered by the first time in the line OR lines starting with a PM time are encoded with a 'p' or written in 24 hour format and use the corresponding calculation. <button id='button' style="border:none;padding:0;background:none;text-decoration:underline;color:white" onclick="expand()">More info</button></p>
     {% endif %}
@@ -122,6 +127,16 @@
     </body>
 
     <script>
+        function copyDivToClipboard() {
+            var range = document.createRange();
+            range.selectNode(document.getElementById("results"));
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand("copy");
+            window.getSelection().removeAllRanges();
+            // window.open("https://www.google.com", "_self")
+        }
+
     function expand() {
       var button = document.getElementById("button");
       var more_info = document.getElementById("more_info");
