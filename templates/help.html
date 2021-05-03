@@ -1,77 +1,83 @@
 <!DOCTYPE html>
 <html>
+    <style>
+    body {
+        background-color: black;
+        color: white;
+    }
+    </style>
+
     <head>
         <meta charset="utf-8">
         <title>SpaceTime Calculator</title>
     </head>
+
     <body>
 
         <h1>Help</h1>
-        <a href="{{ url_for('index') }}">Home</a>
+        <a style="color:white" href="{{ url_for('index') }}">Home</a>
         <br>
-        <pre>
-This tool is intended to be used to sum up intervals of time worked on different
-charge numbers. It will notify of breaks taken throughout the day and invalid
-time entries (overlapping entries or non ordered entries).
+        <div style="width:90ch">
+        <pre style="white-space: pre-wrap;">
+This tool is intended to be used to sum up intervals of time worked on different charge numbers. It will notify of breaks taken throughout the day and invalid time entries (overlapping entries or non ordered entries).
 
-The time ranges are required to be dashed intervals, comma separated and sorted.
-An identifier, followed by a space is required, at the beginning of each time
-entry line.
+The time ranges in every line are required to be dashed intervals, comma separated and sorted. An identifier, followed by a space is required, at the beginning of each time entry line.
 
-Time can be passed in with minutes or frational hours. The fractional hours
-will be calculated from minutes with percision through the summation, but
-rounded to the nearest tenth for the total. Each charge number will be displayed
-with hundredths percision as to not short the employee any hours by pre rounding
-(ie. 0.04 + 0.04 = .08 ~= 0.1)
+Time can be passed in with minutes or frational hours. The fractional hours will be calculated from minutes with percision through the summation, but rounded to the nearest tenth for the total. Each charge number will be displayed with hundredths percision as to not short the employee any hours by pre rounding (ie. 0.04 + 0.04 = .08 ~= 0.1).
 
-Time can also be passed as military time to specify pm times. This may be
-required in edge cases as shown in the third example. This edge case could be
-solved by requiring charge numbers to also be time sorted, but the current
-implementation accepts this sacrafice for ease of noting time through the day.
+The time is computed with two different methods. The first method assumes that the time inputs are ordered by the first time in each line. The second method assumes that lines starting with a PM time are encoded with a 'p' or written in 24 hour format (ie. 'id1 1p-2' or 'id2 13-2' rather than 'id3 1-2'). If these calulations compute different results for breaks or totals, both results are displayed. It is recommended to format inputs according to one of the calculation methods.
 
-    Example time input:
+    Example inputs:
 
-        oh 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6
-        c 8:30-9, 9:30-11, 1-1:42, 3:12-4:12
+        id1 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6
+        id2 8:30-9, 9:30-11, 1-1:42, 3:12-4:12
 
         or
 
-        oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6
-        c 8.5-9, 9.5-11, 1-1.7, 3.2-4.2
+        id1 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6
+        id2 8.5-9, 9.5-11, 1-1.7, 3.2-4.2
 
         or
 
-        c 8-12, 4-5
-        oh 12-4
-        other 18-21
+        id1 8-12, 4-5
+        id2 12-4
+        id3 6p-9
 
-    Example output:
+        or
+
+        id1 8-12, 4-5
+        id2 12-4
+        id3 18-9
+
+    Example outputs:
 
         totals
-        c == 3.7 hrs
-        oh == 6.3 hrs
+        id1 = 3.7 hrs
+        id2 = 6.3 hrs
         total: 10.0
 
         or
 
         breaks
-        12:00-1:00 == 1.0 hr
+        12:00p-1:00p = 1.0 hr
 
         totals
-        oh == 4.0 hr
+        id1 = 4.0 hr
         total: 4.0 hr
 
         or
 
         totals
-        c == 5.0 hr
-        oh == 4.0 hr
-        other == 3.0 hr
+        id1 = 5.0 hr
+        id2 = 4.0 hr
+        id3 = 3.0 hr
         total: 12.0 hr
 
 
-If you notice a calculation error, please <a href="mailto:danielfrentzel@gmail.com">contact</a> the maintainer with the time
-input.
+If you notice a calculation error, please <a style="color:white" href="mailto:danielfrentzel@gmail.com">contact</a> the maintainer with the time input.
+
+<a style="color:white" href="https://github.com/danielfrentzel/spacetime-calculator">Source</a>
         </pre>
+        </div>
 
 </html>

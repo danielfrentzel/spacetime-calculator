@@ -1,50 +1,155 @@
 <!DOCTYPE html>
 <html>
+    <style>
+    html {
+      height: 100%;
+    }
+    body {
+      min-height: 95%;
+    }
+    body {
+        {% if bkgrnd %}
+        background-image: url("static/blue-space.jpg");
+        {% endif  %}
+        background-repeat: no-repeat;
+        background-color: black;
+        background-size:cover;
+        color: white;
+    }
+    </style>
+
     <head>
         <meta charset="utf-8">
-        <title>SpaceTime Calculator</title>
+        <title>Spacetime Calculator</title>
     </head>
-    <body>
 
-        <h1>SpaceTime Calculator</h1>
-        <a href="{{ url_for('help') }}">Help</a>
+    <body>
+        <h1>Spacetime Calculator</h1>
+        <a style="color:white;" href="{{ url_for('help') }}">Help</a>
         <br>
         <br>
         <label>Time input</label>
-
         <form action="" method="post">
-
             {% if time_input %}
-                <textarea id="hourInput" name='time_input' rows="3" cols="80" placeholder="capital 8:15-8:25, 9-9:10, 1-3, 3:21-6:51&#10;overhead 8:05-8:15, 8:25-9, 9:10-1, 3-3:21">{{ time_input }}</textarea>
-
+                <textarea id="hourInput" name='time_input' rows="4" cols="80" placeholder="id1 8:15-8:25, 9-9:10, 1-3, 3:21-6:51&#10;id2 8:05-8:15, 8:25-9, 9:10-1&#10;id3 15-3:21">{{ time_input }}</textarea>
             {% else %}
-                <textarea id="hourInput" name='time_input' rows="3" cols="80" placeholder="capital 8:15-8:25, 9-9:10, 1-3, 3:21-6:51&#10;overhead 8:05-8:15, 8:25-9, 9:10-1, 3-3:21"></textarea>
+                <textarea id="hourInput" name='time_input' rows="4" cols="80" placeholder="id1 8:15-8:25, 9-9:10, 1-3, 3:21-6:51&#10;id2 8:05-8:15, 8:25-9, 9:10-1&#10;id3 15-3:21"></textarea>
+            {% endif %}
+            <br>
+            <br>
+            <button accesskey="n">calculate</button>
+        </form>
+    <br>
+
+    <table style="text-align:left;">
+        <tr style="font-size:120%">
+            {% if double_results %}
+                <th>Ordered Calculation</th>
+                <th>Unordered Calculation</th>
+            {% endif %}
+        </tr>
+        <tr style="vertical-align:top;">
+            {% if breaks_ord %}
+                <td style="width:400px;">
+                    <h5>Breaks</h5>
+                    {% if not double_results and double_breaks %}
+                        <h6>Ordered Calculation</h6>
+                    {% endif %}
+                    {% for break in breaks_ord %}
+                        <p>{{ break[0] }}-{{ break[1] }} = {{ break[2] }} hr<br></p>
+                    {% endfor %}
+                    {% if not double_results and double_breaks %}
+                        <h5>or</h5>
+                        <h6>Unordered Calculation</h6>
+                        {% for break in breaks %}
+                            <p>{{ break[0] }}-{{ break[1] }} = {{ break[2] }} hr<br></p>
+                        {% endfor %}
+                    {% endif %}
+                    <br>
+                </td>
             {% endif %}
 
-            <br>
-            <br>
-            <button>calculate</button>
-        </form>
+            {% if double_results %}
+                <td style="width:400px;">
+                    {% if breaks %}
+                        <h5>Breaks</h5>
+                        {% for break in breaks %}
+                            <p>{{ break[0] }}-{{ break[1] }} = {{ break[2] }} hr<br></p>
+                        {% endfor %}
+                        <br>
+                    {% endif %}
+                </td>
+            {% endif %}
+        </tr>
+        <tr>
+            {% if calculated_hours_ord %}
+                <td style="width:400px;">
+                    {% if success_ord %}
+                        <h5>Totals</h5>
+                        {% if not double_results and double_breaks %}
+                        {% endif %}
+                        <div id=results>
+                            {% for chg_hrs in calculated_hours_ord %}
+                                <p>{{ chg_hrs[0] }} {{ chg_hrs[1] }} hr</p>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <h5>Invalid time input</h5>
+                        <p>{{ calculated_hours_ord }}</p>
+                    {% endif %}
+                </td>
+            {% endif %}
+            {% if double_results %}
+                <td style="width:400px;">
+                    {% if success %}
+                        <h5>Totals</h5>
+                        {% for chg_hrs in calculated_hours %}
+                            <p>{{ chg_hrs[0] }} {{ chg_hrs[1] }} hr</p>
+                        {% endfor %}
+                    {% else %}
+                        <h5>Invalid time input</h5>
+                        <p>{{ calculated_hours }}</p>
+                    {% endif %}
+                </td>
+            {% endif %}
+        </tr>
+    </table>
+
+    {% if success_ord and not double_results %}
+        <!-- <button onclick="copyDivToClipboard()">Copy results and open spacetime</button> -->
+    {% endif %}
+    {% if double_results %}
+        <p style="margin-top:0;margin-bottom:0;font-size:14px;width:90ch;display:block">* Ensure the time input lines are ordered by the first time in the line OR lines starting with a PM time are encoded with a 'p' or written in 24 hour format and use the corresponding calculation. <button id='button' style="border:none;padding:0;background:none;text-decoration:underline;color:white" onclick="expand()">More info</button></p>
+    {% endif %}
+
+    <br>
+    <p id="more_info" style="margin-top:0;margin-bottom:0;font-size:14px;width:90ch;display:block;"></p>
     </body>
 
-    {% if breaks %}
-        <h4>breaks</h4>
-        {% for break in breaks %}
-            <p>{{ break[0] }}-{{ break[1] }} == {{ break[2] }} hr<br></p>
-        {% endfor %}
-        <br>
-    {% endif %}
+    <script>
+        function copyDivToClipboard() {
+            var range = document.createRange();
+            range.selectNode(document.getElementById("results"));
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand("copy");
+            window.getSelection().removeAllRanges();
+            // window.open("https://www.google.com", "_self")
+        }
 
-    {% if calculated_hours %}
-        {% if success %}
-            <h4>totals</h4>
-            {% for chg_hrs in calculated_hours %}
-                <p>{{ chg_hrs[0] }} {{ chg_hrs[1] }} hr</p>
-            {% endfor %}
-        {% else %}
-            <h4>Invalid time input</h4>
-            <p>{{ calculated_hours }}</p>
-        {% endif %}
-    {% endif %}
-
+    function expand() {
+      var button = document.getElementById("button");
+      var more_info = document.getElementById("more_info");
+      if (button.innerHTML === "More info") {
+        button.innerHTML = "Less info";
+      } else {
+        button.innerHTML = "More info";
+      }
+      if (more_info.innerHTML === "") {
+        more_info.innerHTML = "The time is computed with two different methods. The first method assumes that the time inputs are ordered by the first time in each line. The second method assumes that lines starting with a PM time are encoded with a 'p' or written in 24 hour format (ie. 'id1 1p-2' or 'id2 13-2' rather than 'id1 1-2'). If these calulations compute different results for breaks or totals, both results are displayed. It is recommended to format inputs according to one of the calculation methods."
+      } else {
+        more_info.innerHTML = "";
+      }
+    }
+    </script>
 </html>
