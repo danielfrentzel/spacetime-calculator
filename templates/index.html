@@ -1,13 +1,31 @@
 <!DOCTYPE html>
 <html>
+    <style>
+    html {
+      height: 100%;
+    }
+    body {
+      min-height: 95%;
+    }
+    body {
+        {% if bkgrnd %}
+        background-image: url("static/blue-space.jpg");
+        {% endif  %}
+        background-repeat: no-repeat;
+        background-color: black;
+        background-size:cover;
+        color: white;
+    }
+    </style>
+
     <head>
         <meta charset="utf-8">
         <title>SpaceTime Calculator</title>
     </head>
-    </style>
+
     <body>
         <h1>SpaceTime Calculator</h1>
-        <a href="{{ url_for('help') }}">Help</a>
+        <a style="color:white;" href="{{ url_for('help') }}">Help</a>
         <br>
         <br>
         <label>Time input</label>
@@ -21,7 +39,6 @@
             <br>
             <button accesskey="n">calculate</button>
         </form>
-    </body>
     <br>
 
     <table style="text-align:left;">
@@ -97,11 +114,12 @@
     </table>
 
     {% if double_results %}
-        <p style="margin-top:0;margin-bottom:0;font-size:14px;width:90ch;display:block">* Ensure the time input lines are ordered by the first time in the line OR lines starting with a PM time are encoded with a 'p' or written in 24 hour format and use the corresponding calculation. <button id='button' style="border:none;padding:0;background:none;text-decoration:underline;color:blue" onclick="expand()">More info</button></p>
+        <p style="margin-top:0;margin-bottom:0;font-size:14px;width:90ch;display:block">* Ensure the time input lines are ordered by the first time in the line OR lines starting with a PM time are encoded with a 'p' or written in 24 hour format and use the corresponding calculation. <button id='button' style="border:none;padding:0;background:none;text-decoration:underline;color:white" onclick="expand()">More info</button></p>
     {% endif %}
 
     <br>
     <p id="more_info" style="margin-top:0;margin-bottom:0;font-size:14px;width:90ch;display:block;"></p>
+    </body>
 
     <script>
     function expand() {

@@ -6,14 +6,12 @@ app = Flask(__name__)
 
 
 @app.route('/')
-def index():
-    print('init index!')
-    return render_template('index.html')
+def index(background=False):
+    return render_template('index.html', bkgrnd=background)
 
 
 @app.route('/', methods=['POST'])
-def index_post():
-    print('init index post!')
+def index_post(background=False):
     time_input = request.form['time_input']
     try:
         hours, breaks = HourCalculator(time_input).calculate()
@@ -69,6 +67,7 @@ def index_post():
     double_results = str(calculated_hours) != str(calculated_hours_ord)
     double_breaks = str(breaks) != str(breaks_ord)
     return render_template('index.html',
+                           bkgrnd=background,
                            success=success,
                            time_input=time_input,
                            breaks=format_breaks(breaks),
@@ -78,6 +77,16 @@ def index_post():
                            calculated_hours_ord=calculated_hours_ord,
                            double_results=double_results,
                            double_breaks=double_breaks)
+
+
+@app.route('/space')
+def space():
+    return index(background=True)
+
+
+@app.route('/space', methods=['POST'])
+def space_post():
+    return index_post(background=True)
 
 
 @app.route('/help')
