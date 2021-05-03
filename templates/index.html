@@ -66,7 +66,7 @@
         </tr>
         <tr>
             {% if calculated_hours_ord %}
-                <td>
+                <td style="width:400px;">
                     {% if success_ord %}
                         <h5>Totals</h5>
                         {% if not double_results and double_breaks %}
@@ -81,7 +81,7 @@
                 </td>
             {% endif %}
             {% if double_results %}
-                <td>
+                <td style="width:400px;">
                     {% if success %}
                         <h5>Totals</h5>
                         {% for chg_hrs in calculated_hours %}
@@ -113,7 +113,7 @@
         button.innerHTML = "More info";
       }
       if (more_info.innerHTML === "") {
-        more_info.innerHTML = "The calculation is done twice with different assumptions. The first assumption is that the time inputs are ordered by the first time in the line. The second assumption is that lines starting with a PM time are encoded with a 'p' or written in 24 hour format (ie. 'a 1p-2' or 'a 13-2'). If these calulations compute different results for breaks or totals, both results are displayed. It is recommended to format inputs according to one of the calculation methods.";
+        more_info.innerHTML = "The time is computed with two different methods. The first method assumes that the time inputs are ordered by the first time in each line. The second method assumes that lines starting with a PM time are encoded with a 'p' or written in 24 hour format (ie. 'id1 1p-2' or 'id2 13-2' rather than 'id1 1-2'). If these calulations compute different results for breaks or totals, both results are displayed. It is recommended to format inputs according to one of the calculation methods."
       } else {
         more_info.innerHTML = "";
       }

@@ -17,52 +17,52 @@ The time ranges in every line are required to be dashed intervals, comma separat
 
 Time can be passed in with minutes or frational hours. The fractional hours will be calculated from minutes with percision through the summation, but rounded to the nearest tenth for the total. Each charge number will be displayed with hundredths percision as to not short the employee any hours by pre rounding (ie. 0.04 + 0.04 = .08 ~= 0.1).
 
-The calculation is done twice with different assumptions. The first assumption is that the time inputs are ordered by the first time in the line. The second assumption is that lines starting with a PM time are encoded with a 'p' or written in 24 hour format (ie. 'a 1p-2' or 'a 13-2'). If these calulations compute different results for breaks or totals, both results are displayed. It is recommended to format inputs according to one of the calculation methods.
+The time is computed with two different methods. The first method assumes that the time inputs are ordered by the first time in each line. The second method assumes that lines starting with a PM time are encoded with a 'p' or written in 24 hour format (ie. 'id1 1p-2' or 'id2 13-2' rather than 'id3 1-2'). If these calulations compute different results for breaks or totals, both results are displayed. It is recommended to format inputs according to one of the calculation methods.
 
     Example time inputs:
 
-        oh 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6
-        c 8:30-9, 9:30-11, 1-1:42, 3:12-4:12
+        id1 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6
+        id2 8:30-9, 9:30-11, 1-1:42, 3:12-4:12
 
         or
 
-        oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6
-        c 8.5-9, 9.5-11, 1-1.7, 3.2-4.2
+        id1 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6
+        id2 8.5-9, 9.5-11, 1-1.7, 3.2-4.2
 
         or
 
-        c 8-12, 4-5
-        oh 12-4
-        other 6p-9
+        id1 8-12, 4-5
+        id2 12-4
+        id3 6p-9
 
         or
 
-        c 8-12, 4-5
-        oh 12-4
-        other 18-9
+        id1 8-12, 4-5
+        id2 12-4
+        id3 18-9
 
     Example calculation outputs:
 
         totals
-        c == 3.7 hrs
-        oh == 6.3 hrs
+        id1 = 3.7 hrs
+        id2 = 6.3 hrs
         total: 10.0
 
         or
 
         breaks
-        12:00-1:00 == 1.0 hr
+        12:00p-1:00p = 1.0 hr
 
         totals
-        oh == 4.0 hr
+        id1 = 4.0 hr
         total: 4.0 hr
 
         or
 
         totals
-        c == 5.0 hr
-        oh == 4.0 hr
-        other == 3.0 hr
+        id1 = 5.0 hr
+        id2 = 4.0 hr
+        id3 = 3.0 hr
         total: 12.0 hr
 
 
