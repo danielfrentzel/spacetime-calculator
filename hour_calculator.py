@@ -43,20 +43,36 @@ class HourCalculator(object):
         for rng in ranges:
             formatted_range = []
             for time in rng.split('-'):
+                am = False
                 pm = False
-                if time[-1] == 'p':
-                    pm = True
                 if time[-1] == 'a':
                     time = time[:-1]
+                    am = True
+                elif time[-2:] == 'am':
+                    time = time[:-2]
+                    am = True
+                elif time[-1] == 'p':
+                    time = time[:-1]
+                    pm = True
+                elif time[-2:] == 'pm':
+                    time = time[:-2]
+                    pm = True
+
                 if ':' in time:
-                    tmp = time.split(':')
-                    tmp[0] = float(tmp[0][:-1]) + 12 if pm else float(tmp[0])
-                    tmp[1] = round(float(tmp[1]) / 60, 3)
-                    formatted_range.append(str(tmp[0] + tmp[1]))
+                    times = time.split(':')
+                    hours = float(times[0])
+                    minutes = round(float(times[1]) / 60, 3)
                 else:
-                    formatted_range.append(str(float(time[:-1]) + 12) if pm else (time))
+                    hours, minutes = float(time), 0
+
+                hours = float(hours) - 12 if am and int(hours) == 12 else float(hours)
+                hours = float(hours) + 12 if pm else float(hours)
+
+                formatted_range.append(str(hours + minutes))
+
             formatted_ranges.append('-'.join(formatted_range))
 
+        # print('formatted_ranges:', formatted_ranges)
         return formatted_ranges
 
     def _next_charge(self, hours):
@@ -83,8 +99,10 @@ class HourCalculator(object):
                 ranges = [hr.strip() for hr in charge_data[space + 1:].split(',')]
                 ranges = self._format_ranges(ranges)
                 times = [[float(rng.split('-')[0]), float(rng.split('-')[1])] for rng in ranges]
-                # hours[charge_data[:space]] = [hr.strip() for hr in charge_data[space + 1:].split(',')]
+                # print('times', times)
                 str_id = charge_data[:space]
+                if str_id in self.hours:
+                    raise ValueError('Repeated identifier: ' + str_id + '. Combine hours or use unique identifiers.')
                 self.hours[str_id] = times
                 self.charges[str_id] = 0
             except ValueError as e:
@@ -101,6 +119,8 @@ class HourCalculator(object):
             if afternoon:
                 data[0] = [data[0][0] + 12, data[0][1]]
 
+        # print('ordered starts:', self.hours)
+
     def _convert_mil_times(self):
         for code, data in self.hours.items():
             mil_data = []
@@ -114,11 +134,11 @@ class HourCalculator(object):
                 if not afternoon:
                     mil_data.append(time)
                 else:
-                    if time[1] < time[0] and time[1] < 12:
+                    if time[1] < time[0] and time[1] <= 12:
                         mil_data.append([time[0], time[1] + 12])
                     else:
                         mil_data.append(
-                            [time[0] + 12 if time[0] < 12 else time[0], time[1] + 12 if time[1] < 12 else time[1]])
+                            [time[0] + 12 if time[0] <= 12 else time[0], time[1] + 12 if time[1] <= 12 else time[1]])
 
             self.hours[code] = mil_data
 
@@ -192,9 +212,9 @@ class HourCalculator(object):
 if __name__ == '__main__':
     try:
         raw = sys.argv[1]
-        HourCalculator(raw).calculate(ordered=False, cli=True)
-        print()
         HourCalculator(raw).calculate(ordered=True, cli=True)
+        print()
+        HourCalculator(raw).calculate(ordered=False, cli=True)
     except IndexError as e:
         print('Example usage:\n    python calc_hours.py "oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n    c 8.5-9, 9.5-11, \
                1-1.7, 3.2-4.2"\n')

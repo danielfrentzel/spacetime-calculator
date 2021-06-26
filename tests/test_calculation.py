@@ -1,32 +1,67 @@
 import pytest
 from hour_calculator import HourCalculator
 
+valid_calcs = [
+    ('oh 1-2', ({
+        'oh': 1.0,
+        '$total': 1.0
+    }, [])),
+    ('a 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6\n b 8:30-9, 9:30-11, 1-1:42, 3:12-4:12', ({
+        'a': 6.3,
+        'b': 3.7,
+        '$total': 10.0
+    }, [])),
+    ('a 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n b 8.5-9, 9.5-11, 1-1.7, 3.2-4.2', ({
+        'a': 6.3,
+        'b': 3.7,
+        '$total': 10.0
+    }, [])),
+    ('a 4:30-20:30', ({
+        'a': 16.0,
+        '$total': 16.0
+    }, [])),
+    ('a 7:15-8p, 10-12', ({
+        'a': 14.75,
+        '$total': 14.8
+    }, [['20:00', '22:00', '2.0']])),
+    ('a 12am-2:30, 8-8pm', ({
+        'a': 14.5,
+        '$total': 14.5
+    }, [['2:30', '8:00', '5.5']])),
+    ('a 4:30-20:30', ({
+        'a': 16.0,
+        '$total': 16.0
+    }, [])),
+    ('a 0-0:34, 7:10-6p', ({
+        'a': 11.4,
+        '$total': 11.4
+    }, [['0:34', '7:10', '6.6']])),
+    ('a 12a-2:30, 7:30-8p, 9:30-12', ({
+        'a': 17.5,
+        '$total': 17.5
+    }, [['2:30', '7:30', '5.0'], ['20:00', '21:30', '1.5']])),
+]
+
+invalid_calcs = [('a 7:50-8:15\n b 8:15-8:36\n c 8:36-11:10, 12-6:33\n a 11:10-12',
+                  'Repeated identifier: a. Combine hours or use unique identifiers.')]
+
 
 @pytest.fixture
 def hour_calculator():
     return HourCalculator
 
 
-def test_valid_calc1(hour_calculator):
-    hours = 'oh 1-2'
-    output = hour_calculator(hours).calculate()
-    assert output == ({'oh': 1.0, '$total': 1.0}, [])
+@pytest.mark.parametrize('hours, expected', valid_calcs)
+def test_valid_calcs(hour_calculator, hours, expected):
+    assert hour_calculator(hours).calculate() == expected
 
 
-def test_valid_calc2(hour_calculator):
-    hours = 'oh 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6\n\
-             c 8:30-9, 9:30-11, 1-1:42, 3:12-4:12'
-
-    output = hour_calculator(hours).calculate()
-    assert output == ({'oh': 6.3, 'c': 3.7, '$total': 10.0}, [])
-
-
-def test_valid_calc3(hour_calculator):
-    hours = 'oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n\
-             c 8.5-9, 9.5-11, 1-1.7, 3.2-4.2'
-
-    output = hour_calculator(hours).calculate()
-    assert output == ({'oh': 6.3, 'c': 3.7, '$total': 10.0}, [])
+@pytest.mark.parametrize('hours, exception', invalid_calcs)
+def test_invalid_calcs(hour_calculator, hours, exception):
+    try:
+        hour_calculator(hours).calculate()
+    except Exception as e:
+        assert str(e) == exception
 
 
 def test_valid_calc_break(hour_calculator):
