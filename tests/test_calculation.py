@@ -98,11 +98,6 @@ def hour_calculator():
     return HourCalculator
 
 
-# @pytest.mark.parametrize('num, perc, res', [[0.5, 1, 0.5], [0.45, 1, 0.5]])
-# def test_round_consist(hour_calculator, num, perc, res):
-#     assert hour_calculator('').round_consist(num, perc) == res
-
-
 @pytest.mark.parametrize('hours, expected', general_calcs)
 def test_general_calcs(hour_calculator, hours, expected):
     assert hour_calculator(hours).calculate() == expected
