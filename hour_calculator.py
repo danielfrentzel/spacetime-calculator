@@ -32,6 +32,7 @@ displayed with percision as to not short the employee any hours by pre rounding
 
 
 class HourCalculator(object):
+
     def __init__(self, time_input):
         self.time_input = time_input.strip()
         self.hours = {}
@@ -192,6 +193,47 @@ class HourCalculator(object):
             # print('unordered:', self)
             self._calculate_charges()
 
+        # print('charges:', self.charges)
+
+        total_exact = 0
+        total_round = 0
+        diffs = []
+        for chg, duration in self.charges.items():
+            total_exact += duration
+            total_round += round(duration, 1)
+            diff = round(duration - round(duration, 1), 4)
+            diffs.append([chg, diff])
+
+        # prefer to adjust numbers with more time worked (least proportional rounding adjustment)
+        diffs = sorted(diffs, key=lambda diff: self.charges[diff[0]], reverse=True)
+        total_diff = round(round(total_exact, 1) - total_round, 4)
+
+        # find furthest actual from rounded, ie closest to rounding
+        while abs(total_diff) >= 0.1:
+            # adjust those that are the closest to rounding
+            diffs = sorted(diffs, key=lambda diff: abs(diff[1]), reverse=True)
+            for diff in diffs:
+                if total_diff > 0:  # need to increase subtimes
+                    if diff[1] > 0:  # was rounded down
+                        # print('rounding up', diff[0])
+                        self.charges[diff[0]] = round(self.charges[diff[0]] + 0.05, 2)
+                        diff[1] = 0
+                        total_diff -= 0.1
+                        break
+                    else:
+                        continue
+                else:  # need to decrease subtimes
+                    if diff[1] < 0:  # was rounded up
+                        # print('rounding down', diff[0])
+                        self.charges[diff[0]] = round(self.charges[diff[0]] - 0.05, 2)
+                        diff[1] = 0
+                        total_diff += 0.1
+                        break
+                    else:
+                        continue
+
+        # print('charges:', self.charges)
+
         hours = {}
 
         if cli:
@@ -199,13 +241,19 @@ class HourCalculator(object):
         total = 0
         for chg, duration in self.charges.items():
             if cli:
-                print(chg + ' == ' + str(round(duration, 2)) + ' hrs')
-            hours[chg] = round(duration, 2)
-            total += duration
+                print(chg + ' == ' + str(round(duration, 1)) + ' hrs')
+            hours[chg] = round(duration, 1)
+            total += round(duration, 1)
         if cli:
             print('total: ' + str(round(total, 1)))
 
         hours['$total'] = round(total, 1)
+
+        # review subtime adjustments
+        print('exact total, new total, total round:', total_exact, round(total, 1), round(total_exact, 1))
+        if round(total, 1) != round(total_exact, 1):
+            sys.exit('Round error occurred. Please contact maintainer with the input.')
+
         return hours, self.breaks
 
 
