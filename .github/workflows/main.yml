@@ -8,7 +8,7 @@ jobs:
         run: python --version
 
       - name: Install dependencies
-       run: pip install pytest
+        run: pip install pytest
 
       - name: Run Test
-       run: python -m pytest tests/
+        run: python -m pytest tests/
