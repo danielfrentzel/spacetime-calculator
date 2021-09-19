@@ -1,7 +1,7 @@
 import pytest
 from hour_calculator import HourCalculator
 
-valid_calcs = [
+general_calcs = [
     ('oh 1-2', ({
         'oh': 1.0,
         '$total': 1.0
@@ -21,7 +21,7 @@ valid_calcs = [
         '$total': 16.0
     }, [])),
     ('a 7:15-8p, 10-12', ({
-        'a': 14.75,
+        'a': 14.8,
         '$total': 14.8
     }, [['20:00', '22:00', '2.0']])),
     ('a 12am-2:30, 8-8pm', ({
@@ -42,6 +42,53 @@ valid_calcs = [
     }, [['2:30', '7:30', '5.0'], ['20:00', '21:30', '1.5']])),
 ]
 
+subtime_rounding_calcs = [
+    (
+        'id1 7-8:26\n id2 9-10:27\n id3 11-11:26',
+        ({  # test subtime rounding up 0.1
+            'id1': 1.4,
+            'id2': 1.5,
+            'id3': 0.4,
+            '$total': 3.3
+        })),
+    (
+        'id1 7-8:26\n id2 9-10:27\n id3 11-11:26\n id4 12-1:27\n id5 2-3:27\n id6 4-4:27',
+        ({  # test subtime rounding up 0.2
+            'id1': 1.4,
+            'id2': 1.5,
+            'id3': 0.4,
+            'id4': 1.5,
+            'id5': 1.4,
+            'id6': 0.5,
+            '$total': 6.7
+        })),
+    (
+        'id1 7-8:26\n id2 9-11:27\n id3 12-12:26',
+        ({  # test subtime rounding evening out
+            'id1': 1.4,
+            'id2': 2.5,
+            'id3': 0.4,
+            '$total': 4.3
+        })),
+    (
+        'id1 6-8:27\n id2 9-11:27\n id3 12-12:26',
+        ({  # test subtime rounding down 0.1
+            'id1': 2.4,
+            'id2': 2.5,
+            'id3': 0.4,
+            '$total': 5.3
+        })),
+    (
+        'id1 6-8:27\n id2 9-11:27\n id3 12-12:27\n id4 1-3:27',
+        ({  # test subtime rounding down 0.2
+            'id1': 2.4,
+            'id2': 2.4,
+            'id3': 0.5,
+            'id4': 2.5,
+            '$total': 7.8
+        })),
+]
+
 invalid_calcs = [('a 7:50-8:15\n b 8:15-8:36\n c 8:36-11:10, 12-6:33\n a 11:10-12',
                   'Repeated identifier: a. Combine hours or use unique identifiers.')]
 
@@ -51,9 +98,14 @@ def hour_calculator():
     return HourCalculator
 
 
-@pytest.mark.parametrize('hours, expected', valid_calcs)
-def test_valid_calcs(hour_calculator, hours, expected):
+@pytest.mark.parametrize('hours, expected', general_calcs)
+def test_general_calcs(hour_calculator, hours, expected):
     assert hour_calculator(hours).calculate() == expected
+
+
+@pytest.mark.parametrize('hours, expected', subtime_rounding_calcs)
+def test_subtime_rounding_calcs(hour_calculator, hours, expected):
+    assert hour_calculator(hours).calculate()[0] == expected
 
 
 @pytest.mark.parametrize('hours, exception', invalid_calcs)
