@@ -1,0 +1,17 @@
+name: Unittest
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Validate python version
+        run: python --version
+
+      - name: Install dependencies
+        run: pip install pytest
+
+      - name: Run Test
+        run: python -m pytest tests/
