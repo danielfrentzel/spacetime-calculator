@@ -120,7 +120,7 @@ class HourCalculator(object):
                     hours, minutes = float(time), 0
 
                 hours = float(hours) - 12 if am and int(hours) == 12 else float(hours)
-                hours = float(hours) + 12 if pm else float(hours)
+                hours = float(hours) + 12 if pm and int(hours) != 12 else float(hours)
 
                 formatted_range.append(str(hours + minutes))
 
@@ -190,7 +190,7 @@ class HourCalculator(object):
 
     def _convert_mil_times(self):
         """
-        Convert hours attribute to 24 hour format.
+        Convert hours attribute data to 24 hour format.
         """
         for code, data in self.hours.items():
             mil_data = []

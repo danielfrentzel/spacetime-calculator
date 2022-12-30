@@ -58,6 +58,14 @@ general_calcs = [
     }, [['2:30', '7:30', '5.0'], ['20:00', '21:30', '1.5']], {
         'target_time': None
     })),
+    # bug fix on 12/29/2022
+    ('a 12a-1:30a\n b 11a-12:30p', ({
+        'a': 1.5,
+        'b': 1.5,
+        '$total': 3.0
+    }, [['1:30', '11:00', '9.5']], {
+        'target_time': None
+    })),
 ]
 
 subtime_rounding_calcs = [
