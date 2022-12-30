@@ -51,7 +51,11 @@ class HourCalculator(object):
     def _strip_inline_comments(self):
         """
         Remove inline comments from time inputs.
-        ie id1 6-8 #random => id1 6-8
+        Inline comment delimiters: #, //, <
+        ie
+            id1 6-8  # comment
+            id1 6-8 //comment
+            id1 6-8 <comment>
         """
         self.time_input = [line[:line.find('#')].strip() if '#' in line else line for line in self.time_input]
         self.time_input = [line[:line.find('//')].strip() if '//' in line else line for line in self.time_input]
@@ -86,6 +90,9 @@ class HourCalculator(object):
         self.time_input = non_encoded_lines
 
     def _format_ranges(self, ranges):
+        """
+        Convert time ranges within a line of the time entry to required format for calculations.
+        """
         formatted_ranges = []
         for rng in ranges:
             formatted_range = []
@@ -123,6 +130,9 @@ class HourCalculator(object):
         return formatted_ranges
 
     def _next_charge(self, hours):
+        """
+        Find the next ordered charge id to evaluate.
+        """
         nxt = None
         nex_start = None
         for code, data in hours.items():
@@ -136,6 +146,12 @@ class HourCalculator(object):
         return nxt
 
     def _parse_hour_input(self):
+        """
+        Parse the hour input lines and populate the hours attribute. Charge ids are determined by the string up until
+        the first inline space.HHour ranges are collected from comma delimited, dashed seperated hour values.
+        ie
+            charge_id 9-10, 11-12
+        """
         for charge_data in self.time_input:
             try:
                 if not charge_data:
@@ -148,7 +164,6 @@ class HourCalculator(object):
                 # print('times', times)
                 str_id = charge_data[:space]
                 if str_id in self.hours:
-                    # raise ValueError('Repeated identifier: ' + str_id + '. Combine hours or use unique identifiers.')
                     print('combining duplicated id:', str_id)
                     self.hours[str_id] += times
                 else:
@@ -158,6 +173,9 @@ class HourCalculator(object):
                 raise e
 
     def _convert_ordered_starts(self):
+        """
+        Determine unspecified switch from AM to PM for ordered data.
+        """
         afternoon = False
         last_start = None
         for code, data in self.hours.items():
@@ -171,6 +189,9 @@ class HourCalculator(object):
         # print('ordered starts:', self.hours)
 
     def _convert_mil_times(self):
+        """
+        Convert hours attribute to 24 hour format.
+        """
         for code, data in self.hours.items():
             mil_data = []
             afternoon = False
@@ -194,6 +215,9 @@ class HourCalculator(object):
         # print('mil times ' + str(self.hours))
 
     def _determine_last_time(self):
+        """
+        Determine last time interval entry. This is used from calculating the target goal time.
+        """
         last_time = -1
         for code, data in self.hours.items():
             end_time = data[-1][1]
@@ -203,6 +227,11 @@ class HourCalculator(object):
         self._last_time = last_time
 
     def _calculate_charges(self):
+        """
+        Populate the charges attribute with summations of the input hour intervals.
+
+        Warning: This method is destructive to the hours attribute (pls fix).
+        """
         last_time = None
         while self.hours:
             nxt_chg = self._next_charge(self.hours)
@@ -230,9 +259,19 @@ class HourCalculator(object):
             self.charges[nxt_chg] += duration
 
     def _frac_hours_to_minutes(self, frac_hours):
+        """
+        Convert decimal hours to nearest hour:minute format.
+        ie
+            4:28
+        """
         return str(math.floor(frac_hours)) + ':' + str(format(round((frac_hours % 1) * 60), '02d'))
 
     def _frac_hours_to_12h_format(self, frac_hours):
+        """
+        Convert decimal hours to nearest 12h hour:minute format.
+        ie
+            4:28pm
+        """
         am_pm = 'am'
         if math.floor(frac_hours) > 12:
             hours = str(math.floor(frac_hours) % 12)
@@ -246,9 +285,15 @@ class HourCalculator(object):
         return hours + ':' + str(format(round((frac_hours % 1) * 60), '02d')) + am_pm
 
     def __str__(self):
+        """
+        Print useful attributes of the hour calculator object.
+        """
         return '\n'.join(['hours: ' + str(self.hours), 'charges: ' + str(self.charges), 'breaks: ' + str(self.breaks)])
 
     def _eval_target_time(self, exact_hours, last_charge_time):
+        """
+        Return the 12 hour format time required to fulfill target hours.
+        """
         print('(_eval_target_time)')
 
         if not self._target_hours:
@@ -269,6 +314,9 @@ class HourCalculator(object):
         return None
 
     def calculate(self, ordered=True, cli=False):
+        """
+        Calculate hours worked from time input.
+        """
         if ordered:
             print('Calculating ordered')
             if cli:
