@@ -34,10 +34,56 @@ displayed with percision as to not short the employee any hours by pre rounding
 class HourCalculator(object):
 
     def __init__(self, time_input):
-        self.time_input = time_input.strip()
+        self.time_input = [line.strip() for line in time_input.strip().splitlines()]
         self.hours = {}
         self.charges = {}
         self.breaks = []
+
+        self._target_hours = 0
+
+        self._last_time = -1
+        self._target_time = None
+        self.metadata = {}
+
+        self._strip_inline_comments()
+        self._parse_encoding()
+
+    def _strip_inline_comments(self):
+        """
+        Remove inline comments from time inputs.
+        ie id1 6-8 #random => id1 6-8
+        """
+        self.time_input = [line[:line.find('#')].strip() if '#' in line else line for line in self.time_input]
+        self.time_input = [line[:line.find('//')].strip() if '//' in line else line for line in self.time_input]
+        self.time_input = [line[:line.find('<')].strip() if '<' in line else line for line in self.time_input]
+
+    def _parse_encoding(self):
+        """
+        Parse encoded time input lines.
+
+        Encoded target hours (with single backslash)
+            \\=10.0
+            or
+            \\==10.0
+        """
+        non_encoded_lines = []
+
+        # target hours
+        for line in self.time_input:
+            if line[:3] == '\\==':
+                try:
+                    self._target_hours = float(line[3:])
+                except ValueError:
+                    print('Unable to parse target hours.')
+            elif line[:2] == '\\=':
+                try:
+                    self._target_hours = float(line[2:])
+                except ValueError:
+                    print('Unable to parse target hours.')
+            else:
+                non_encoded_lines.append(line)
+
+        self.time_input = non_encoded_lines
 
     def _format_ranges(self, ranges):
         formatted_ranges = []
@@ -90,8 +136,7 @@ class HourCalculator(object):
         return nxt
 
     def _parse_hour_input(self):
-        # for charge_data in raw.split('\n'):
-        for charge_data in self.time_input.splitlines():
+        for charge_data in self.time_input:
             try:
                 if not charge_data:
                     continue
@@ -103,8 +148,11 @@ class HourCalculator(object):
                 # print('times', times)
                 str_id = charge_data[:space]
                 if str_id in self.hours:
-                    raise ValueError('Repeated identifier: ' + str_id + '. Combine hours or use unique identifiers.')
-                self.hours[str_id] = times
+                    # raise ValueError('Repeated identifier: ' + str_id + '. Combine hours or use unique identifiers.')
+                    print('combining duplicated id:', str_id)
+                    self.hours[str_id] += times
+                else:
+                    self.hours[str_id] = times
                 self.charges[str_id] = 0
             except ValueError as e:
                 raise e
@@ -145,6 +193,15 @@ class HourCalculator(object):
 
         # print('mil times ' + str(self.hours))
 
+    def _determine_last_time(self):
+        last_time = -1
+        for code, data in self.hours.items():
+            end_time = data[-1][1]
+            if end_time > last_time:
+                last_time = end_time
+
+        self._last_time = last_time
+
     def _calculate_charges(self):
         last_time = None
         while self.hours:
@@ -161,7 +218,7 @@ class HourCalculator(object):
                 break_end = self._frac_hours_to_minutes(round(time[0], 3))
                 break_dur = str(round(abs(time[0] - last_time), 2))
                 self.breaks.append([break_start, break_end, break_dur])
-                # print('break: ' + break_start + '-' + break_end + ' == ' + break_dur)
+                print('break: ' + break_start + '-' + break_end + ' == ' + break_dur)
 
             if len(self.hours[nxt_chg]) > 1:
                 self.hours[nxt_chg] = self.hours[nxt_chg][1:]
@@ -175,22 +232,59 @@ class HourCalculator(object):
     def _frac_hours_to_minutes(self, frac_hours):
         return str(math.floor(frac_hours)) + ':' + str(format(round((frac_hours % 1) * 60), '02d'))
 
+    def _frac_hours_to_12h_format(self, frac_hours):
+        am_pm = 'am'
+        if math.floor(frac_hours) > 12:
+            hours = str(math.floor(frac_hours) % 12)
+            am_pm = 'pm'
+        elif math.floor(frac_hours) == 12:
+            hours = str(math.floor(frac_hours))
+            am_pm = 'pm'
+        else:
+            hours = str(math.floor(frac_hours))
+
+        return hours + ':' + str(format(round((frac_hours % 1) * 60), '02d')) + am_pm
+
     def __str__(self):
         return '\n'.join(['hours: ' + str(self.hours), 'charges: ' + str(self.charges), 'breaks: ' + str(self.breaks)])
 
-    def calculate(self, ordered=False, cli=False):
+    def _eval_target_time(self, exact_hours, last_charge_time):
+        print('(_eval_target_time)')
+
+        if not self._target_hours:
+            return
+        if exact_hours > self._target_hours:
+            print('Target hours fulfilled.')
+            return
+
+        # +0.01 bunk since python3 rounds half to even
+        # adding 0.01 is not breaking since it is less than minute accuracy (1/60)
+        # https://stackoverflow.com/questions/10825926/python-3-x-rounding-behavior
+        unfulfilled_hours = self._target_hours - exact_hours - 0.05 + 0.01
+        if unfulfilled_hours > 0:
+            target_time = last_charge_time + unfulfilled_hours
+            target_time_h_m = self._frac_hours_to_12h_format(target_time)
+            print('Target time: ', target_time_h_m)
+            return target_time_h_m
+        return None
+
+    def calculate(self, ordered=True, cli=False):
         if ordered:
+            print('Calculating ordered')
             if cli:
                 print('Calculating ordered.')
             self._parse_hour_input()
             self._convert_ordered_starts()
             self._convert_mil_times()
             # print('ordered:', self)
+            self._determine_last_time()
             self._calculate_charges()
         else:
+            print('Calculating unordered')
             self._parse_hour_input()
             self._convert_mil_times()
             # print('unordered:', self)
+            self._determine_last_time()
             self._calculate_charges()
 
         # print('charges:', self.charges)
@@ -203,6 +297,8 @@ class HourCalculator(object):
             total_round += round(duration, 1)
             diff = round(duration - round(duration, 1), 4)
             diffs.append([chg, diff])
+
+        self._target_time = self._eval_target_time(total_exact, self._last_time)
 
         # prefer to adjust numbers with more time worked (least proportional rounding adjustment)
         diffs = sorted(diffs, key=lambda diff: self.charges[diff[0]], reverse=True)
@@ -254,7 +350,10 @@ class HourCalculator(object):
         if round(total, 1) != round(total_exact, 1):
             sys.exit('Round error occurred. Please contact maintainer with the input.')
 
-        return hours, self.breaks
+        self.metadata['target_time'] = self._target_time
+
+        print()
+        return hours, self.breaks, self.metadata
 
 
 if __name__ == '__main__':
@@ -264,6 +363,6 @@ if __name__ == '__main__':
         print()
         HourCalculator(raw).calculate(ordered=False, cli=True)
     except IndexError as e:
-        print('Example usage:\n    python calc_hours.py "oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n    c 8.5-9, 9.5-11, \
+        print('Example usage:\n    python3 calc_hours.py "oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n    c 8.5-9, 9.5-11, \
                1-1.7, 3.2-4.2"\n')
         raise e

@@ -5,41 +5,59 @@ general_calcs = [
     ('oh 1-2', ({
         'oh': 1.0,
         '$total': 1.0
-    }, [])),
+    }, [], {
+        'target_time': None
+    })),
     ('a 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6\n b 8:30-9, 9:30-11, 1-1:42, 3:12-4:12', ({
         'a': 6.3,
         'b': 3.7,
         '$total': 10.0
-    }, [])),
+    }, [], {
+        'target_time': None
+    })),
     ('a 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n b 8.5-9, 9.5-11, 1-1.7, 3.2-4.2', ({
         'a': 6.3,
         'b': 3.7,
         '$total': 10.0
-    }, [])),
+    }, [], {
+        'target_time': None
+    })),
     ('a 4:30-20:30', ({
         'a': 16.0,
         '$total': 16.0
-    }, [])),
+    }, [], {
+        'target_time': None
+    })),
     ('a 7:15-8p, 10-12', ({
         'a': 14.8,
         '$total': 14.8
-    }, [['20:00', '22:00', '2.0']])),
+    }, [['20:00', '22:00', '2.0']], {
+        'target_time': None
+    })),
     ('a 12am-2:30, 8-8pm', ({
         'a': 14.5,
         '$total': 14.5
-    }, [['2:30', '8:00', '5.5']])),
+    }, [['2:30', '8:00', '5.5']], {
+        'target_time': None
+    })),
     ('a 4:30-20:30', ({
         'a': 16.0,
         '$total': 16.0
-    }, [])),
+    }, [], {
+        'target_time': None
+    })),
     ('a 0-0:34, 7:10-6p', ({
         'a': 11.4,
         '$total': 11.4
-    }, [['0:34', '7:10', '6.6']])),
+    }, [['0:34', '7:10', '6.6']], {
+        'target_time': None
+    })),
     ('a 12a-2:30, 7:30-8p, 9:30-12', ({
         'a': 17.5,
         '$total': 17.5
-    }, [['2:30', '7:30', '5.0'], ['20:00', '21:30', '1.5']])),
+    }, [['2:30', '7:30', '5.0'], ['20:00', '21:30', '1.5']], {
+        'target_time': None
+    })),
 ]
 
 subtime_rounding_calcs = [
@@ -92,6 +110,90 @@ subtime_rounding_calcs = [
 invalid_calcs = [('a 7:50-8:15\n b 8:15-8:36\n c 8:36-11:10, 12-6:33\n a 11:10-12',
                   'Repeated identifier: a. Combine hours or use unique identifiers.')]
 
+target_time_calcs = [
+    (
+        'id1 6-8\n id2 8-10\n id3 10-11:33\n \\=5.6',
+        (
+            {  # test calculated target time
+                'id1': 2.0,
+                'id2': 2.0,
+                'id3': 1.5,
+                '$total': 5.5
+            },
+            [],
+            {
+                'target_time': '11:34am'
+            })),
+    (
+        'id1 6-8\n id2 8-10\n id3 1-1:30\n \\=4.6',
+        (
+            {  # test calculated target time
+                'id1': 2.0,
+                'id2': 2.0,
+                'id3': 0.5,
+                '$total': 4.5
+            },
+            [['10:00', '13:00', '3.0']],
+            {
+                'target_time': '1:34pm'
+            })),
+    (
+        'id1 6-8\n id2 8-10\n id3 10-11:34\n \\=5.6',
+        (
+            {  # test acheived target time
+                'id1': 2.0,
+                'id2': 2.0,
+                'id3': 1.6,
+                '$total': 5.6
+            },
+            [],
+            {
+                'target_time': None
+            })),
+]
+
+ignore_inline_comments = [
+    (
+        'id1 6-8#comment\n id2 8-10\n id3 10-11:33\n',
+        (
+            {  # test inline # comment
+                'id1': 2.0,
+                'id2': 2.0,
+                'id3': 1.5,
+                '$total': 5.5
+            },
+            [],
+            {
+                'target_time': None
+            })),
+    (
+        'id1 6-8//comment\n id2 8-10\n id3 10-11:33\n',
+        (
+            {  # test inline // comment
+                'id1': 2.0,
+                'id2': 2.0,
+                'id3': 1.5,
+                '$total': 5.5
+            },
+            [],
+            {
+                'target_time': None
+            })),
+    (
+        'id1 6-8<comment>\n id2 8-10\n id3 10-11:33\n',
+        (
+            {  # test inline // comment
+                'id1': 2.0,
+                'id2': 2.0,
+                'id3': 1.5,
+                '$total': 5.5
+            },
+            [],
+            {
+                'target_time': None
+            })),
+]
+
 
 @pytest.fixture
 def hour_calculator():
@@ -100,6 +202,7 @@ def hour_calculator():
 
 @pytest.mark.parametrize('hours, expected', general_calcs)
 def test_general_calcs(hour_calculator, hours, expected):
+    print(hour_calculator(hours).calculate())
     assert hour_calculator(hours).calculate() == expected
 
 
@@ -122,7 +225,14 @@ def test_valid_calc_break(hour_calculator):
              other 18-9'
 
     output = hour_calculator(hours).calculate()
-    assert output == ({'c': 5.0, 'oh': 4.0, 'other': 3.0, '$total': 12.0}, [['17:00', '18:00', '1.0']])
+    assert output == ({
+        'c': 5.0,
+        'oh': 4.0,
+        'other': 3.0,
+        '$total': 12.0
+    }, [['17:00', '18:00', '1.0']], {
+        'target_time': None
+    })
 
 
 def test_valid_calc_breaks(hour_calculator):
@@ -136,7 +246,9 @@ def test_valid_calc_breaks(hour_calculator):
         'oh': 4.0,
         'other': 3.0,
         '$total': 11.0
-    }, [['11:00', '12:00', '1.0'], ['17:00', '18:00', '1.0']])
+    }, [['11:00', '12:00', '1.0'], ['17:00', '18:00', '1.0']], {
+        'target_time': None
+    })
 
 
 @pytest.mark.parametrize('ordered', [True, False])
@@ -146,7 +258,7 @@ def test_unordered_only(ordered, hour_calculator):
 
     try:
         output = hour_calculator(hours).calculate(ordered=ordered)
-        assert output == ({'$total': 12.0, 'a': 1.0, 'b': 11.0}, [['8:00', '9:00', '1.0']])
+        assert output == ({'$total': 12.0, 'a': 1.0, 'b': 11.0}, [['8:00', '9:00', '1.0']], {'target_time': None})
     except RuntimeError:
         assert ordered
 
@@ -158,7 +270,7 @@ def test_ordered_only(ordered, hour_calculator):
 
     try:
         output = hour_calculator(hours).calculate(ordered=ordered)
-        assert output == ({'$total': 12.0, 'a': 5.0, 'b': 7.0}, [['12:00', '13:00', '1.0']])
+        assert output == ({'$total': 12.0, 'a': 5.0, 'b': 7.0}, [['12:00', '13:00', '1.0']], {'target_time': None})
     except RuntimeError:
         assert not ordered
 
@@ -176,9 +288,18 @@ def test_break_disagree(ordered, hour_calculator):
             'b': 7.0,
             'c': 1.0,
             '$total': 10.0
-        }, [['13:00', '14:00', '1.0'], ['18:00', '19:00', '1.0']])
+        }, [['13:00', '14:00', '1.0'], ['18:00', '19:00', '1.0']], {
+            'target_time': None
+        })
     else:
-        assert output == ({'a': 2.0, 'b': 7.0, 'c': 1.0, '$total': 10.0}, [['13:00', '14:00', '1.0']])
+        assert output == ({
+            'a': 2.0,
+            'b': 7.0,
+            'c': 1.0,
+            '$total': 10.0
+        }, [['13:00', '14:00', '1.0']], {
+            'target_time': None
+        })
 
 
 @pytest.mark.parametrize('ordered', [True, False])
@@ -194,14 +315,41 @@ def test_disagree(ordered, hour_calculator):
             'c': 1.0,
             'b': 13.0,
             '$total': 16.0
-        }, [['10:00', '13:00', '3.0'], ['14:00', '22:00', '8.0'], ['13:00', '14:00', '1.0']])
+        }, [['10:00', '13:00', '3.0'], ['14:00', '22:00', '8.0'], ['13:00', '14:00', '1.0']], {
+            'target_time': None
+        })
     else:
         assert output == ({
             'a': 2.0,
             'c': 1.0,
             'b': 7.0,
             '$total': 10.0
-        }, [['2:00', '8:00', '6.0'], ['13:00', '14:00', '1.0']])
+        }, [['2:00', '8:00', '6.0'], ['13:00', '14:00', '1.0']], {
+            'target_time': None
+        })
+
+
+def test_valid_overlapping_ids(hour_calculator):
+    hours = 'id1 6-8\n\
+             id2 8-10\n\
+             id1 10-11'
+
+    output = hour_calculator(hours).calculate()
+    assert output == ({'id1': 3.0, 'id2': 2.0, '$total': 5.0}, [], {'target_time': None})
+
+
+@pytest.mark.parametrize('hours, expected', target_time_calcs)
+def test_target_hours(hour_calculator, hours, expected):
+    print()
+    print('init!')
+    print(hour_calculator(hours).calculate())
+    print(expected)
+    assert hour_calculator(hours).calculate(ordered=True) == expected
+
+
+@pytest.mark.parametrize('hours, expected', ignore_inline_comments)
+def test_inline_comments(hour_calculator, hours, expected):
+    assert hour_calculator(hours).calculate() == expected
 
 
 """

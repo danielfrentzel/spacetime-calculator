@@ -31,9 +31,9 @@
         <label>Time input</label>
         <form action="" method="post">
             {% if time_input %}
-                <textarea id="hourInput" name='time_input' rows="4" cols="80" placeholder="id1 7:30-8:25, 10-1&#10;id2 8:25-10, 3:21-5&#10;id3 1p-3:21">{{ time_input }}</textarea>
+                <textarea id="hourInput" name='time_input' rows="6" cols="80" placeholder="id1 7:30-8:25, 10-1&#10;id2 8:25-10, 3:21-5&#10;id3 1p-3:21">{{ time_input }}</textarea>
             {% else %}
-                <textarea id="hourInput" name='time_input' rows="4" cols="80" placeholder="id1 7:30-8:25, 10-1&#10;id2 8:25-10, 3:21-5&#10;id3 1p-3:21"></textarea>
+                <textarea id="hourInput" name='time_input' rows="6" cols="80" placeholder="id1 7:30-8:25, 10-1&#10;id2 8:25-10, 3:21-5&#10;id3 1p-3:21"></textarea>
             {% endif %}
             <br>
             <br>
@@ -42,6 +42,9 @@
     <br>
 
     <table style="text-align:left;">
+        {% if target_time %}
+            <p>Target time: {{ target_time }}</p>
+        {% endif %}
         <tr style="font-size:120%">
             {% if double_results %}
                 <th>Ordered Calculation</th>
@@ -68,7 +71,6 @@
                     <br>
                 </td>
             {% endif %}
-
             {% if double_results %}
                 <td style="width:400px;">
                     {% if breaks %}
@@ -106,6 +108,9 @@
                         {% for chg_hrs in calculated_hours %}
                             <p>{{ chg_hrs[0] }} {{ chg_hrs[1] }} hr</p>
                         {% endfor %}
+                    {% elif target_time %}
+                        <h5>Target time</h5>
+                        <p>{{ target_time }}</p>
                     {% else %}
                         <h5>Invalid time input</h5>
                         <p>{{ calculated_hours }}</p>

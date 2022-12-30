@@ -12,9 +12,10 @@ def index(background=False):
 
 @app.route('/', methods=['POST'])
 def index_post(background=False):
+
     time_input = request.form['time_input']
     try:
-        hours, breaks = HourCalculator(time_input).calculate()
+        hours, breaks, metadata = HourCalculator(time_input).calculate()
         success = True
         total = hours['$total']
         del hours['$total']
@@ -38,7 +39,7 @@ def index_post(background=False):
         calculated_hours = e
 
     try:
-        hours_ord, breaks_ord = HourCalculator(time_input).calculate(ordered=True)
+        hours_ord, breaks_ord, metadata = HourCalculator(time_input).calculate(ordered=True)
         success_ord = True
         total_ord = hours_ord['$total']
         del hours_ord['$total']
@@ -49,16 +50,18 @@ def index_post(background=False):
 
         calculated_hours_ord.append(['total:', total_ord])
 
+        target_time = metadata['target_time']
+
     except RuntimeError as re:
         print(re)
-        success_ord, breaks_ord = False, None
+        success_ord, breaks_ord, target_time = False, None, None
         calculated_hours_ord = re
     except ValueError as ve:
         print(ve)
-        success_ord, breaks_ord = False, None
+        success_ord, breaks_ord, target_time = False, None, None
         calculated_hours_ord = ve
     except Exception as e:
-        success_ord, breaks_ord = False, None
+        success_ord, breaks_ord, target_time = False, None, None
         calculated_hours_ord = e
 
     print('calculated_hours:    ', calculated_hours)
@@ -76,7 +79,8 @@ def index_post(background=False):
                            breaks_ord=format_breaks(breaks_ord),
                            calculated_hours_ord=calculated_hours_ord,
                            double_results=double_results,
-                           double_breaks=double_breaks)
+                           double_breaks=double_breaks,
+                           target_time=target_time)
 
 
 @app.route('/space')
@@ -111,4 +115,4 @@ def format_breaks(breaks):
 
 
 if __name__ == '__main__':
-    app.run(debug=False, host='127.0.0.1', port='5000')
+    app.run(debug=False, host='127.0.0.1', port='5001')
