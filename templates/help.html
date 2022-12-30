@@ -27,6 +27,7 @@ Time can be passed in with minutes or frational hours. The fractional hours will
 
 The time is computed with two different methods. The first method assumes that the time inputs are ordered by the first time in each line. The second method assumes that lines starting with a PM time are encoded with a 'p' or written in 24 hour format (ie. 'id1 1p-2' or 'id2 13-2' rather than 'id3 1-2'). Note, it is only necessary to encode the first time in a line if it is indeed a PM time. If the two calculation methods compute different results for breaks or totals, both respective results are displayed. It is recommended to format inputs according to one of the calculation methods.
 
+
     Example inputs:
 
         id1 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6
@@ -48,6 +49,7 @@ The time is computed with two different methods. The first method assumes that t
         id1 8-12, 4-5
         id2 12-4
         id3 18-9
+
 
     Example outputs:
 
@@ -72,6 +74,20 @@ The time is computed with two different methods. The first method assumes that t
         id2 = 4.0 hr
         id3 = 3.0 hr
         total: 12.0 hr
+
+
+    Encodings:
+
+    Target hours can be specified by encoding a new line with \= or \==
+        id1 8-5p
+        \=9.6
+
+        Target time: 5:34pm
+
+    Inline comment notes are supported in three formats
+        id1 8-10  # comment
+        id2 10-11 //comment
+        id3 11-6 &lt;comment&gt;
 
 
 If you notice a calculation error, please <a style="color:white" href="mailto:7daniel49@gmail.com">contact</a> the maintainer with the time input or submit a pull request.
