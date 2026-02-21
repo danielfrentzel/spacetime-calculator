@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 from flask import Flask, render_template, request
 
 from hour_calculator import HourCalculator
@@ -18,7 +20,7 @@ def index_post(background=False):
     print(f'time_input:\n{time_input_print}')
 
     try:
-        hours, breaks, metadata = HourCalculator(time_input).calculate()
+        hours, breaks, metadata = HourCalculator(time_input).calculate(ordered=True)
         success = True
         total = hours['$total']
         del hours['$total']
@@ -42,7 +44,7 @@ def index_post(background=False):
         calculated_hours = e
 
     try:
-        hours_ord, breaks_ord, metadata = HourCalculator(time_input).calculate(ordered=True)
+        hours_ord, breaks_ord, metadata = HourCalculator(time_input).calculate(ordered=False)
         success_ord = True
         total_ord = hours_ord['$total']
         del hours_ord['$total']
@@ -118,4 +120,4 @@ def format_breaks(breaks):
 
 
 if __name__ == '__main__':
-    app.run(debug=False, host='127.0.0.1', port='5001')
+    app.run(debug=False, host='127.0.0.1', port='5002')

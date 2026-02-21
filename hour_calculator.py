@@ -319,8 +319,6 @@ class HourCalculator(object):
         """
         if ordered:
             print('Calculating ordered')
-            if cli:
-                print('Calculating ordered.')
             self._parse_hour_input()
             self._convert_ordered_starts()
             self._convert_mil_times()
@@ -407,9 +405,15 @@ class HourCalculator(object):
 if __name__ == '__main__':
     try:
         raw = sys.argv[1]
-        HourCalculator(raw).calculate(ordered=True, cli=True)
+        try:
+            HourCalculator(raw).calculate(ordered=True, cli=True)
+        except Exception as e:
+            print(e)
         print()
-        HourCalculator(raw).calculate(ordered=False, cli=True)
+        try:
+            HourCalculator(raw).calculate(ordered=False, cli=True)
+        except Exception as e:
+            print(e)
     except IndexError as e:
         print('Example usage:\n    python3 calc_hours.py "oh 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6\n    c 8.5-9, 9.5-11, \
                1-1.7, 3.2-4.2"\n')
