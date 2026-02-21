@@ -14,6 +14,9 @@ def index(background=False):
 def index_post(background=False):
 
     time_input = request.form['time_input']
+    time_input_print = time_input.replace('\r\n', '\n')
+    print(f'time_input:\n{time_input_print}')
+
     try:
         hours, breaks, metadata = HourCalculator(time_input).calculate()
         success = True
