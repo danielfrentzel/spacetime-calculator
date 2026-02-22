@@ -127,7 +127,6 @@ def index():
             log.debug('-' * 72)
             log.debug('SUMMARY')
             col_w = max([len(k) for k in all_ids] + [len('Total')], default=4) + 2
-            print(col_w)
             col_v = 12
             sep = '-' * (col_w + col_v * 3 + 18)
             log.debug('  %-*s  %-*s  %-*s  %-*s  %s', col_w, 'ID', col_v, 'V2 Ord', col_v, 'V2 Unord', col_v,
