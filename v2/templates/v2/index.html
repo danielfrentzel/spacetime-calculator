@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #2a3142;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --accent-glow: rgba(88, 166, 255, 0.15);
+    --green: #3fb950;
+    --green-bg: rgba(63, 185, 80, 0.1);
+    --red: #f85149;
+    --red-bg: rgba(248, 81, 73, 0.1);
+    --yellow: #d29922;
+    --yellow-bg: rgba(210, 153, 34, 0.1);
+    --purple: #a371f7;
+    --purple-bg: rgba(163, 113, 247, 0.1);
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .container { width: 100%; max-width: 760px; }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+    background: linear-gradient(135deg, var(--accent), #a371f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    font-weight: 300;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 160px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    padding: 14px 16px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.7;
+  }
+
+  textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  textarea::placeholder { color: #6b7585; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 11px 28px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn:hover { filter: brightness(1.15); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(88,166,255,0.3); }
+  .btn:active { transform: translateY(0); }
+  .btn svg { width: 16px; height: 16px; }
+
+  .results-section { animation: fadeIn 0.35s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-title {
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .id-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+
+  .id-name { font-family: 'DM Mono', monospace; font-weight: 500; font-size: 0.95rem; }
+
+  .id-hours {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.95rem;
+    color: var(--green);
+    background: var(--green-bg);
+    padding: 4px 12px;
+    border-radius: 6px;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    margin-top: 4px;
+    border-top: 1px solid var(--border);
+  }
+
+  .total-label { font-weight: 600; font-size: 0.95rem; }
+
+  .total-hours {
+    font-family: 'DM Mono', monospace;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--accent);
+  }
+
+  .break-item, .target-item {
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .break-item {
+    background: var(--yellow-bg);
+    color: var(--yellow);
+    border-left: 3px solid var(--yellow);
+  }
+
+  .target-item {
+    background: var(--purple-bg);
+    color: var(--purple);
+    border-left: 3px solid var(--purple);
+  }
+
+  .icon-sm { width: 15px; height: 15px; flex-shrink: 0; }
+
+  .section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title-row .section-title {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { border-color: var(--green); color: var(--green); }
+  .copy-btn svg { width: 13px; height: 13px; }
+
+  .show-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 8px 20px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .show-more-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .report-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: transparent;
+    border: 1px solid rgba(248, 81, 73, 0.3);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .report-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .version-header {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 24px;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+  }
+
+  .info-box {
+    background: var(--accent-glow);
+    border: 1px solid rgba(88, 166, 255, 0.3);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    color: var(--accent);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+    animation: fadeIn 0.35s ease;
+  }
+
+  .info-box .info-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .info-box .info-detail {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    opacity: 0.85;
+    margin-top: 6px;
+  }
+
+  .warning-box {
+    background: var(--yellow-bg);
+    border: 1px solid rgba(210, 153, 34, 0.3);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    color: var(--yellow);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+    animation: fadeIn 0.35s ease;
+  }
+
+  .warning-box .warning-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .warning-box .warning-detail {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    opacity: 0.85;
+    margin-top: 6px;
+  }
+
+  .error-box {
+    background: var(--red-bg);
+    border: 1px solid rgba(248,81,73,0.3);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    color: var(--red);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+    animation: fadeIn 0.35s ease;
+  }
+
+  .hint {
+    margin-top: 12px;
+    font-size: 0.78rem;
+    color: #6b7585;
+    font-family: 'DM Mono', monospace;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Time Calculator</h1>
+  <p style="font-size:0.85rem;margin-bottom:28px;">
+    <a href="/v2/help" style="color:var(--accent);">Help</a>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="/" style="color:var(--accent);">Version 1</a>
+  </p>
+  <p class="subtitle">Calculate total hours worked per ID.</p>
+
+  <form method="POST" class="card">
+    <label for="input">Time Entries</label>
+    <textarea id="input" name="input" placeholder="id1 8-8:30, 9-9:30, 11-1&#10;id2 8:30-9, 9:30-11, 1-1:42">{{ input_text }}</textarea>
+    <div class="hint">
+      Format: &lt;id&gt; &lt;start time&gt;-&lt;end time&gt;, …&nbsp;&nbsp;|&nbsp;&nbsp;Times: 8, 8:30, 8.5&nbsp;&nbsp;|&nbsp;&nbsp;AM/PM: 8a, 8am, 3p, 3pm&nbsp;&nbsp;|&nbsp;&nbsp;In-line comments: # // &lt;…&gt;&nbsp;&nbsp;|&nbsp;&nbsp;Total hour target format: \=8.0
+    </div>
+    <button type="submit" class="btn" title="Shift+Enter or Ctrl+Enter">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Calculate
+    </button>
+  </form>
+
+  {% if error %}
+  <div class="error-box">{{ error }}</div>
+  {% endif %}
+
+  {% if order_error %}
+  <div class="warning-box">
+    <div class="warning-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Disagreement between calculation methods — unordered mode failed
+    </div>
+    <div class="warning-detail">{{ order_error }}</div>
+    {% if results is not none %}<div class="warning-detail">Showing ordered results below. Please review the results for accuracy.</div>{% endif %}
+  </div>
+  {% endif %}
+
+  {% if order_warning %}
+  <div class="warning-box">
+    <div class="warning-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Disagreement between calculation methods — input order may be ambiguous
+    </div>
+    <div class="warning-detail">
+      Unordered: {% for id, hrs in order_warning.items() %}{{ id }} = {{ "%.1f"|format(hrs) }} hrs{% if not loop.last %},&nbsp;&nbsp;{% endif %}{% endfor %}
+    </div>
+    <div class="warning-detail">Showing ordered results below. Please review the results for accuracy.</div>
+  </div>
+  {% endif %}
+
+  {% if detected_ids %}
+  <div class="info-box">
+    <div class="info-title">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+      Multi-word ID{{ 's' if detected_ids|length > 1 else '' }} detected
+    </div>
+    {% for id in detected_ids %}
+    <div class="info-detail">ID detected as: "{{ id }}"</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if results %}
+  <div class="results-section">
+    <div class="card">
+      <div class="section-title-row">
+        <span class="section-title">Hours by ID</span>
+        <button class="copy-btn" onclick="copyResults(this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span class="copy-label">Copy</span>
+        </button>
+      </div>
+      {% for id, hours in results.items() %}
+      <div class="id-row">
+        <span class="id-name">{{ id }}</span>
+        <span class="id-hours">{{ "%.1f"|format(hours) }} hrs</span>
+      </div>
+      {% endfor %}
+      <div class="total-row">
+        <span class="total-label">Total</span>
+        <span class="total-hours">{{ "%.1f"|format(total) }} hrs</span>
+      </div>
+    </div>
+
+    {% if breaks %}
+    <div class="card">
+      <div class="section-title">Breaks</div>
+      {% for b in breaks %}
+      <div class="break-item">
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ b }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if target_time or target_achieved_at %}
+    <div class="card">
+      <div class="section-title">Target Time</div>
+      {% if target_achieved_at %}
+      <div class="target-item" style="background:var(--green-bg);color:var(--green);border-left-color:var(--green);">
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Done since {{ target_achieved_at }}
+      </div>
+      {% else %}
+      <div class="target-item">
+        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Done by {{ target_time }}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+  {% endif %}
+
+  {% set has_detail = results is not none or v2_unordered is not none or v2_unordered_error or v1_ordered is not none or v1_unordered is not none or v1_ordered_error or v1_unordered_error %}
+  {% if has_detail %}
+  <div class="results-section">
+    <button class="show-more-btn" id="show-more-btn" onclick="toggleMore()">
+      {% if methods_differ %}Show less{% else %}Show more{% endif %}
+    </button>
+    <div id="more-details" style="display:{% if methods_differ %}block{% else %}none{% endif %};">
+
+      {% set all_errored = results is none and v2_unordered is none and v1_ordered is none and v1_unordered is none %}
+      <p style="font-size:0.85rem;margin-bottom:16px;margin-top:12px;{% if all_errored %}color:var(--red);{% elif methods_differ %}color:var(--yellow);{% else %}color:var(--green);{% endif %}">
+        {% if all_errored %}&#x2715; All calculation methods failed. Please verify the time entries.
+        {% elif methods_differ %}&#x26a0; Results differ between calculation methods — review calculations for accuracy.<br>
+        <span style="padding-left:1.2em;">Review time entries and order lines by the first start time or specify AM/PM explicitly. See <a href="/v2/help" style="color:var(--accent);">Help</a> for more information.</span>
+        {% else %}&#x2713; All calculation methods agree.{% endif %}
+      </p>
+
+      <div class="version-header" style="color:var(--accent);border-bottom:1px solid rgba(88,166,255,0.25);">Version 2 Calculations</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px;">
+
+        <div class="card">
+          {% if results is not none %}
+          <div class="section-title-row">
+            <span class="section-title">Ordered</span>
+            <button class="copy-btn" onclick="copyResults(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+            {% for id, hours in results.items() %}
+            <div class="id-row">
+              <span class="id-name">{{ id }}</span>
+              <span class="id-hours">{{ "%.1f"|format(hours) }} hrs</span>
+            </div>
+            {% endfor %}
+            <div class="total-row">
+              <span class="total-label">Total</span>
+              <span class="total-hours">{{ "%.1f"|format(total) }} hrs</span>
+            </div>
+            {% if breaks %}
+            <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+              <div style="font-size:0.7rem;font-weight:500;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);margin-bottom:8px;">Breaks</div>
+              {% for b in breaks %}
+              <div class="break-item">
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {{ b }}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+          {% else %}
+          <div class="section-title">Ordered</div>
+            <p style="color:var(--red);font-size:0.85rem;margin-top:8px;">{{ error }}</p>
+          {% endif %}
+        </div>
+
+        <div class="card">
+          {% if v2_unordered is not none %}
+          <div class="section-title-row">
+            <span class="section-title">Unordered</span>
+            <button class="copy-btn" onclick="copyResults(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+            {% for id, hrs in v2_unordered.items() %}
+            <div class="id-row">
+              <span class="id-name">{{ id }}</span>
+              <span class="id-hours">{{ "%.1f"|format(hrs) }} hrs</span>
+            </div>
+            {% endfor %}
+            <div class="total-row">
+              <span class="total-label">Total</span>
+              <span class="total-hours">{{ "%.1f"|format(v2_unordered_total) }} hrs</span>
+            </div>
+            {% if v2_unordered_breaks %}
+            <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+              <div style="font-size:0.7rem;font-weight:500;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);margin-bottom:8px;">Breaks</div>
+              {% for b in v2_unordered_breaks %}
+              <div class="break-item">
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {{ b }}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+          {% else %}
+          <div class="section-title">Unordered</div>
+            <p style="color:var(--red);font-size:0.85rem;margin-top:8px;">{{ v2_unordered_error }}</p>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <div class="version-header" style="color:var(--accent);border-bottom:1px solid rgba(163,113,247,0.25);">Version 1 Calculations</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+        <div class="card">
+          {% if v1_ordered is not none %}
+          <div class="section-title-row">
+            <span class="section-title">Ordered</span>
+            <button class="copy-btn" onclick="copyResults(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+            {% for id, hrs in v1_ordered.items() %}
+            <div class="id-row">
+              <span class="id-name">{{ id }}</span>
+              <span class="id-hours">{{ "%.1f"|format(hrs) }} hrs</span>
+            </div>
+            {% endfor %}
+            <div class="total-row">
+              <span class="total-label">Total</span>
+              <span class="total-hours">{{ "%.1f"|format(v1_ordered_total) }} hrs</span>
+            </div>
+            {% if v1_ordered_breaks %}
+            <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+              <div style="font-size:0.7rem;font-weight:500;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);margin-bottom:8px;">Breaks</div>
+              {% for b in v1_ordered_breaks %}
+              <div class="break-item">
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {{ b }}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+          {% else %}
+          <div class="section-title">Ordered</div>
+            <p style="color:var(--red);font-size:0.85rem;margin-top:8px;">{{ v1_ordered_error }}</p>
+          {% endif %}
+        </div>
+
+        <div class="card">
+          {% if v1_unordered is not none %}
+          <div class="section-title-row">
+            <span class="section-title">Unordered</span>
+            <button class="copy-btn" onclick="copyResults(this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+            {% for id, hrs in v1_unordered.items() %}
+            <div class="id-row">
+              <span class="id-name">{{ id }}</span>
+              <span class="id-hours">{{ "%.1f"|format(hrs) }} hrs</span>
+            </div>
+            {% endfor %}
+            <div class="total-row">
+              <span class="total-label">Total</span>
+              <span class="total-hours">{{ "%.1f"|format(v1_unordered_total) }} hrs</span>
+            </div>
+            {% if v1_unordered_breaks %}
+            <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
+              <div style="font-size:0.7rem;font-weight:500;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);margin-bottom:8px;">Breaks</div>
+              {% for b in v1_unordered_breaks %}
+              <div class="break-item">
+                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {{ b }}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+          {% else %}
+          <div class="section-title">Unordered</div>
+            <p style="color:var(--red);font-size:0.85rem;margin-top:8px;">{{ v1_unordered_error }}</p>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if error or v2_unordered_error or v1_ordered_error or v1_unordered_error %}
+  <div style="margin-top:8px;text-align:right;">
+    <button class="report-btn" onclick="reportBug()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4.97 0 9-4.03 9-9s-4.03-9-9-9-9 4.03-9 9 4.03 9 9 9z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+      Report a bug
+    </button>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+document.getElementById('input').addEventListener('keydown', function(e) {
+  if ((e.shiftKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault();
+    this.closest('form').submit();
+  }
+});
+
+function reportBug() {
+  const input = document.getElementById('input').value;
+  const subject = encodeURIComponent('Time Calculator Error Report');
+  const body = encodeURIComponent('An error occured when submitting the following input.\n\n\n' + input);
+  window.location.href = 'mailto:7daniel49@gmail.com?subject=' + subject + '&body=' + body;
+}
+
+function toggleMore() {
+  const btn = document.getElementById('show-more-btn');
+  const details = document.getElementById('more-details');
+  const expanded = details.style.display !== 'none';
+  details.style.display = expanded ? 'none' : 'block';
+  btn.textContent = expanded ? 'Show more' : 'Show less';
+}
+
+function copyResults(btn) {
+  const card = btn.closest('.card');
+  const rows = card.querySelectorAll('.id-row');
+  const total = card.querySelector('.total-hours');
+  let lines = [];
+  rows.forEach(row => {
+    const id = row.querySelector('.id-name').textContent.trim();
+    const hrs = row.querySelector('.id-hours').textContent.trim();
+    lines.push(id + ' = ' + hrs);
+  });
+  lines.push('Total = ' + total.textContent.trim());
+  navigator.clipboard.writeText(lines.join(',  ')).then(() => {
+    const label = btn.querySelector('.copy-label');
+    btn.classList.add('copied');
+    label.textContent = 'Copied!';
+    setTimeout(() => { btn.classList.remove('copied'); label.textContent = 'Copy'; }, 2000);
+  });
+}
+</script>
+</body>
+</html>

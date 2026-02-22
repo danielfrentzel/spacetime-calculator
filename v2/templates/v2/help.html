@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time Tracker – Help</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #161b22;
+    --border: #2a3142;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .container { width: 100%; max-width: 760px; }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+    background: linear-gradient(135deg, var(--accent), #a371f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .nav {
+    margin-bottom: 28px;
+    font-size: 0.9rem;
+  }
+
+  .nav a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .nav a:hover { text-decoration: underline; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+  }
+
+  pre {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    white-space: pre-wrap;
+    line-height: 1.75;
+    color: var(--text);
+  }
+
+  a { color: var(--accent); }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Help</h1>
+  <div class="nav"><a href="/v2">&larr; Home</a></div>
+  <div class="card">
+    <pre>
+This tool was created to simplify the summation of time intervals worked on different charge numbers. It will notify of breaks taken throughout the day and invalid time entries (overlapping entries or non ordered entries).
+
+The time ranges in every line are required to be dashed intervals, comma separated and sorted. An identifier, followed by a space is required at the beginning of each time entry line. See examples below.
+
+Time can be passed in with minutes or frational hours. The fractional hours will be calculated from minutes with precision through the summation. Totals are rounded to the nearest tenth and the subtime entries are ensured to add up to the exact rounded total. In order to do this, subtimes are adjusted to remove any rounding discrepancy. A preference is given to adjust subtimes closest to rounding the other way and then to subtimes with a larger amount of time worked. Rest assured that subtime adjustments do not short the employee any time worked and give the most accurate breakdown of time worked per category while not under or over representing the total hours worked.
+
+The time is computed with two different methods. The first method assumes that the time inputs are ordered by the first time in each line. The second method assumes that lines starting with a PM time are encoded with a 'p' or written in 24 hour format (ie. 'id1 1p-2' or 'id2 13-2' rather than 'id3 1-2'). Note, it is only necessary to encode the first time in a line if it is indeed a PM time. If the two calculation methods compute different results for breaks or totals, both respective results are displayed. It is recommended to format inputs according to one of the calculation methods.
+
+
+    Example inputs:
+
+        id1 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6
+        id2 8:30-9, 9:30-11, 1-1:42, 3:12-4:12
+
+        or
+
+        id1 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6
+        id2 8.5-9, 9.5-11, 1-1.7, 3.2-4.2
+
+        or
+
+        id1 8-12, 4-5
+        id2 12-4
+        id3 6p-9
+
+        or
+
+        id1 8-12, 4-5
+        id2 12-4
+        id3 18-9
+
+
+    Example outputs:
+
+        totals
+        id1 = 3.7 hrs
+        id2 = 6.3 hrs
+        total: 10.0
+
+        or
+
+        breaks
+        12:00p-1:00p = 1.0 hr
+
+        totals
+        id1 = 4.0 hr
+        total: 4.0 hr
+
+        or
+
+        totals
+        id1 = 5.0 hr
+        id2 = 4.0 hr
+        id3 = 3.0 hr
+        total: 12.0 hr
+
+
+    Encodings:
+
+    Target hours can be specified by encoding a new line with \= or \==
+        id1 8-5p
+        \=9.6
+
+        Target time: 5:34pm
+
+    Inline comment notes are supported in three formats
+        id1 8-10  # comment
+        id2 10-11 //comment
+        id3 11-6 &lt;comment&gt;
+
+
+If you notice a calculation error, please <a href="mailto:7daniel49@gmail.com">contact</a> the maintainer with the time input or submit a pull request.
+
+<a href="https://github.com/danielfrentzel/spacetime-calculator">Source</a>
+    </pre>
+  </div>
+</div>
+</body>
+</html>
