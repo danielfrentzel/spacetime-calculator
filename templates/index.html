@@ -24,8 +24,21 @@
     </head>
 
     <body>
+        {% if show_banner %}
+        <div id="v2-banner" style="background:#1a4d7a;color:white;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-radius:4px;">
+            <span>&#10024; A new version is available! <a href="/v2" style="color:#7dd3fc;font-weight:bold;">Try the new Spacetime Calculator &rarr;</a></span>
+            <button onclick="dismissBanner()" style="background:none;border:none;color:white;font-size:20px;cursor:pointer;padding:0 4px;line-height:1;">&times;</button>
+        </div>
+        <script>
+            function dismissBanner() {
+                document.getElementById('v2-banner').style.display = 'none';
+            }
+        </script>
+        {% endif %}
         <h1>Spacetime Calculator</h1>
         <a style="color:white;" href="{{ url_for('help') }}">Help</a>
+        &nbsp;|&nbsp;
+        <a style="color:white;" href="/v2">Version 2</a>
         <br>
         <br>
         <label>Time input</label>

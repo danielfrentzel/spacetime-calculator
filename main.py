@@ -3,21 +3,23 @@
 from flask import Flask, render_template, request
 
 from hour_calculator import HourCalculator
+from v2.app import v2_bp
 
 app = Flask(__name__)
+app.register_blueprint(v2_bp, url_prefix='/v2')
 
 
 @app.route('/')
 def index(background=False):
-    return render_template('index.html', bkgrnd=background)
+    return render_template('index.html', bkgrnd=background, show_banner=True)
 
 
 @app.route('/', methods=['POST'])
 def index_post(background=False):
 
-    time_input = request.form['time_input']
+    time_input = request.form['time_input'].replace('\\n', '\n')
     time_input_print = time_input.replace('\r\n', '\n')
-    print(f'time_input:\n{time_input_print}')
+    print(f'V1 time_input:\n{time_input_print}')
 
     try:
         hours, breaks, metadata = HourCalculator(time_input).calculate(ordered=True)
@@ -76,6 +78,7 @@ def index_post(background=False):
     double_breaks = str(breaks) != str(breaks_ord)
     return render_template('index.html',
                            bkgrnd=background,
+                           show_banner=False,
                            success=success,
                            time_input=time_input,
                            breaks=format_breaks(breaks),
@@ -120,4 +123,4 @@ def format_breaks(breaks):
 
 
 if __name__ == '__main__':
-    app.run(debug=False, host='127.0.0.1', port='5002')
+    app.run(debug=True, host='127.0.0.1', port='5001')
