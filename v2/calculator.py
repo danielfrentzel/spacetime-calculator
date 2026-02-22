@@ -8,7 +8,7 @@ _handler = logging.StreamHandler()
 _handler.setLevel(logging.DEBUG)
 _handler.setFormatter(logging.Formatter('%(asctime)s.%(msecs)03d %(message)s', datefmt='%H:%M:%S'))
 log.addHandler(_handler)
-log.propagate = True
+log.propagate = False
 
 
 def _parse_time(t_str):
@@ -34,7 +34,10 @@ def _parse_time(t_str):
     if ':' in t_str:
         parts = t_str.split(':')
         hours = float(parts[0])
-        minutes = round(float(parts[1]) / 60, 3)
+        raw_minutes = float(parts[1])
+        if raw_minutes < 0 or raw_minutes > 59:
+            raise ValueError(f"Invalid minutes '{int(raw_minutes)}' in time '{t_str.strip()}'. Minutes must be 0–59.")
+        minutes = round(raw_minutes / 60, 3)
     else:
         hours = float(t_str)
         minutes = 0
@@ -51,6 +54,9 @@ def _frac_to_hhmm(frac):
     """Decimal hours → 'H:MM' (24h). e.g. 13.5 → '13:30'"""
     h = math.floor(frac)
     m = round((frac % 1) * 60)
+    if m == 60:
+        h += 1
+        m = 0
     return f"{h}:{m:02d}"
 
 
@@ -58,10 +64,15 @@ def _frac_to_12h(frac):
     """Decimal hours → 'H:MMam/pm'. e.g. 13.567 → '1:34pm'"""
     h = math.floor(frac)
     m = round((frac % 1) * 60)
+    if m == 60:
+        h += 1
+        m = 0
     if h > 12:
         return f"{h % 12}:{m:02d}pm"
     elif h == 12:
         return f"12:{m:02d}pm"
+    elif h == 0:
+        return f"12:{m:02d}am"
     else:
         return f"{h}:{m:02d}am"
 
@@ -104,6 +115,8 @@ def _format_ranges(ranges_list):
     result = []
     for rng in ranges_list:
         parts = rng.split('-')
+        if len(parts) != 2 or not parts[0].strip() or not parts[1].strip():
+            raise ValueError(f"Invalid time range '{rng.strip()}'. Expected format: start-end (e.g. 8-5, 8:30-12).")
         start = _parse_time(parts[0])
         end = _parse_time(parts[1])
         result.append([start, end])
@@ -144,7 +157,7 @@ def _convert_ordered_starts(hours_dict, explicit_ids=None):
     afternoon = False
     last_start = None
     for code, data in hours_dict.items():
-        if not last_start:
+        if last_start is None:
             last_start = data[0][0]
         if last_start > data[0][0]:
             afternoon = True
@@ -171,7 +184,7 @@ def _convert_mil_times(hours_dict):
                     new_time = [time[0], time[1] + 12]
                 else:
                     new_time = [
-                        time[0] + 12 if time[0] <= 12 else time[0],
+                        time[0] + 12 if time[0] < 12 else time[0],
                         time[1] + 12 if time[1] <= 12 else time[1],
                     ]
 
@@ -281,7 +294,7 @@ def process_input(text, ordered=False):
         duration = round(abs(time[1] - time[0]), 3)
 
         if last_time and time[0] < last_time:
-            raise RuntimeError(f'Double charging or invalid range: {time[0]}-{last_time}. '
+            raise RuntimeError(f'Double charging or invalid range: {_frac_to_hhmm(time[0])}-{_frac_to_hhmm(last_time)}. '
                                f'Ensure lines starting with a PM time are written in 24 hour format.')
 
         if last_time and last_time != time[0]:
@@ -327,12 +340,14 @@ def process_input(text, ordered=False):
 
     while abs(total_diff) >= 0.1:
         diffs = sorted(diffs, key=lambda d: abs(d[1]), reverse=True)
+        adjusted = False
         for diff in diffs:
             if total_diff > 0:
                 if diff[1] > 0:
                     charges[diff[0]] = round(charges[diff[0]] + 0.05, 2)
                     diff[1] = 0
                     total_diff -= 0.1
+                    adjusted = True
                     break
                 else:
                     continue
@@ -341,9 +356,12 @@ def process_input(text, ordered=False):
                     charges[diff[0]] = round(charges[diff[0]] - 0.05, 2)
                     diff[1] = 0
                     total_diff += 0.1
+                    adjusted = True
                     break
                 else:
                     continue
+        if not adjusted:
+            break
 
     results = {}
     total = 0

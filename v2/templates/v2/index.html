@@ -3,8 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Time Tracker</title>
+<title>Timecard Hour Calculator — Calculate Hours by Charge Number</title>
+<meta name="description" content="Free timecard hour calculator that totals time intervals by charge number. Takes the burden off manually adding up hours — enter times in natural HH:MM, decimal, or AM/PM formats and get accurate totals to the tenth of an hour. Detects breaks, tracks target hours, and ensures your timecard adds up. Built for Lockheed Martin, Raytheon, Northrop Grumman, Boeing, General Dynamics, L3Harris, BAE Systems, ULA, Leidos, and other defense contractors, consultants, law firms, and anyone who tracks billable hours by project code or WBS to the nearest tenth.">
+<meta name="keywords" content="timecard calculator, hour calculator, charge number, time intervals, Lockheed Martin timecard, Raytheon hours, Northrop Grumman time tracking, Boeing timecard, ULA hours, defense contractor timecard, WBS code, billable hours, tenth of an hour, time entry calculator">
+<meta property="og:title" content="Timecard Hour Calculator — Calculate Hours by Charge Number">
+<meta property="og:description" content="Free timecard calculator that removes the hassle of manually summing time intervals. Enter start and end times in HH:MM or AM/PM format, get accurate totals by charge number to the nearest tenth of an hour, and track target hours.">
+<meta property="og:type" content="website">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Timecard Hour Calculator",
+  "description": "Free timecard hour calculator that removes the burden of manually adding up time intervals. Enter times in natural HH:MM, decimal, or AM/PM formats and get accurate totals by charge number to the tenth of an hour. Detects breaks, tracks target hours, and ensures your timecard adds up correctly. Used by employees at Lockheed Martin, Raytheon, Northrop Grumman, Boeing, General Dynamics, L3Harris, BAE Systems, ULA, Leidos, and other defense contractors and organizations that track billable hours.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
 <style>
   :root {
     --bg: #0e1117;
@@ -36,16 +52,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 20px;
+    padding: 28px 20px;
   }
 
   .container { width: 100%; max-width: 760px; }
 
   h1 {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 600;
     letter-spacing: -0.5px;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     background: linear-gradient(135deg, var(--accent), #a371f7);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -53,8 +69,8 @@
 
   .subtitle {
     color: var(--text-dim);
-    font-size: 0.95rem;
-    margin-bottom: 6px;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
     font-weight: 300;
   }
 
@@ -62,8 +78,8 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 24px;
+    padding: 20px;
+    margin-bottom: 18px;
   }
 
   label {
@@ -78,7 +94,7 @@
 
   textarea {
     width: 100%;
-    min-height: 160px;
+    min-height: 120px;
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -100,7 +116,7 @@
     align-items: center;
     gap: 8px;
     margin-top: 16px;
-    padding: 11px 28px;
+    padding: 9px 24px;
     background: var(--accent);
     color: #fff;
     font-family: 'Outfit', sans-serif;
@@ -341,36 +357,65 @@
   }
 
   .hint {
-    margin-top: 12px;
+    margin-top: 8px;
     font-size: 0.78rem;
     color: #6b7585;
     font-family: 'DM Mono', monospace;
     line-height: 1.6;
   }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+
+  .info-popover.visible { display: block !important; }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>Time Calculator</h1>
-  <p style="font-size:0.85rem;margin-bottom:28px;">
-    <a href="/v2/help" style="color:var(--accent);">Help</a>
-    &nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="/" style="color:var(--accent);">Version 1</a>
-  </p>
-  <p class="subtitle">Calculate total hours worked per ID.</p>
+<main class="container">
+  <header>
+    <h1>Timecard Hour Calculator</h1>
+    <p style="font-size:0.85rem;margin-bottom:16px;">
+      <a href="/v2/help" style="color:var(--accent);">Help</a>
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      <a href="/" style="color:var(--accent);">Version 1</a>
+    </p>
+    <p class="subtitle">Calculate total hours worked per charge number from time intervals.</p>
+  </header>
 
   <form method="POST" class="card">
     <label for="input">Time Entries</label>
-    <textarea id="input" name="input" placeholder="id1 8-8:30, 9-9:30, 11-1&#10;id2 8:30-9, 9:30-11, 1-1:42">{{ input_text }}</textarea>
+    <textarea id="input" name="input" autofocus placeholder="overhead 8-12, 1-5&#10;demo 8:30-9, 12-1&#10;irad 5-5:30">{{ input_text }}</textarea>
     <div class="hint">
-      Format: &lt;id&gt; &lt;start time&gt;-&lt;end time&gt;, …&nbsp;&nbsp;|&nbsp;&nbsp;Times: 8, 8:30, 8.5&nbsp;&nbsp;|&nbsp;&nbsp;AM/PM: 8a, 8am, 3p, 3pm&nbsp;&nbsp;|&nbsp;&nbsp;In-line comments: # // &lt;…&gt;&nbsp;&nbsp;|&nbsp;&nbsp;Total hour target format: \=8.0
+      Format: &lt;charge number&gt; &lt;start&gt;-&lt;end&gt;, …&nbsp;&nbsp;|&nbsp;&nbsp;Times: 8, 8:30, 8.5&nbsp;&nbsp;|&nbsp;&nbsp;AM/PM: 8a, 8am, 3p, 3pm&nbsp;&nbsp;|&nbsp;&nbsp;Comments: # // &lt;…&gt;
     </div>
-    <button type="submit" class="btn" title="Shift+Enter or Ctrl+Enter">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      Calculate
-    </button>
+    <div style="display:flex;align-items:center;gap:16px;margin-top:10px;">
+      <div style="display:flex;align-items:center;gap:5px;">
+        <label for="target" style="margin:0;white-space:nowrap;">Target hours</label>
+        <span class="info-toggle" onclick="event.preventDefault();event.stopPropagation();this.querySelector('.info-popover').classList.toggle('visible')" style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);font-size:0.55rem;vertical-align:middle;user-select:none;">&#x1D4BE;<span class="info-popover" style="display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);width:240px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.78rem;font-weight:300;color:var(--text-dim);line-height:1.5;text-transform:none;letter-spacing:0;white-space:normal;box-shadow:0 4px 16px rgba(0,0,0,0.3);z-index:10;">If you need to hit a certain number of hours for the day, entering a target will calculate what time you need to work until.</span></span>
+      </div>
+      <input id="target" name="target" type="text" inputmode="decimal" placeholder="e.g. 8.0" value="{{ target_input|default('') }}"
+        style="width:90px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.85rem;padding:6px 10px;outline:none;">
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
+      <button type="submit" class="btn" style="margin-top:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Calculate
+      </button>
+      <button type="button" class="btn" style="margin-top:0;background:transparent;border:1px solid var(--border);color:var(--text-dim);" onclick="document.getElementById('input').value='';document.getElementById('target').value='';document.getElementById('input').focus();">
+        Clear
+      </button>
+      <span style="font-size:0.75rem;color:#6b7585;font-family:'DM Mono',monospace;margin-left:auto;">Shift+Enter to submit</span>
+    </div>
   </form>
 
+  <section>
   {% if error %}
   <div class="error-box">{{ error }}</div>
   {% endif %}
@@ -482,7 +527,7 @@
       </p>
 
       <div class="version-header" style="color:var(--accent);border-bottom:1px solid rgba(88,166,255,0.25);">Version 2 Calculations</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:8px;">
+      <div class="compare-grid" style="margin-bottom:8px;">
 
         <div class="card">
           {% if results is not none %}
@@ -559,7 +604,7 @@
       </div>
 
       <div class="version-header" style="color:var(--accent);border-bottom:1px solid rgba(163,113,247,0.25);">Version 1 Calculations</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="compare-grid">
 
         <div class="card">
           {% if v1_ordered is not none %}
@@ -646,9 +691,16 @@
     </button>
   </div>
   {% endif %}
-</div>
+  </section>
+</main>
 
 <script>
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.info-toggle')) {
+    document.querySelectorAll('.info-popover.visible').forEach(function(el) { el.classList.remove('visible'); });
+  }
+});
+
 document.getElementById('input').addEventListener('keydown', function(e) {
   if ((e.shiftKey || e.ctrlKey) && e.key === 'Enter') {
     e.preventDefault();

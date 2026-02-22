@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Time Tracker – Help</title>
+<title>Timecard Hour Calculator — Help &amp; Examples</title>
+<meta name="description" content="How to use the Timecard Hour Calculator. Input format guide, time notation examples, target hour tracking, inline comments, and tips for charge number entry.">
+<meta property="og:title" content="Timecard Hour Calculator — Help & Examples">
+<meta property="og:description" content="How to use the Timecard Hour Calculator. Input format guide, time notation examples, target hour tracking, and tips for charge number entry.">
+<meta property="og:type" content="website">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -13,6 +17,7 @@
     --text: #e6edf3;
     --text-dim: #8b949e;
     --accent: #58a6ff;
+    --green: #3fb950;
     --radius: 10px;
   }
 
@@ -58,102 +63,181 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 28px 32px;
+    margin-bottom: 20px;
   }
+
+  h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+
+  p, li {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  ul {
+    padding-left: 20px;
+    margin-bottom: 14px;
+  }
+
+  li { margin-bottom: 6px; }
 
   pre {
     font-family: 'DM Mono', monospace;
-    font-size: 0.88rem;
+    font-size: 0.85rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 12px 0;
     white-space: pre-wrap;
     line-height: 1.75;
     color: var(--text);
+    overflow-x: auto;
+  }
+
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.88rem;
+    background: rgba(88, 166, 255, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+
+  .result-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--green);
   }
 
   a { color: var(--accent); }
   a:hover { text-decoration: underline; }
+
+  .kbd {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 7px;
+    color: var(--text-dim);
+  }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>Help</h1>
-  <div class="nav"><a href="/v2">&larr; Home</a></div>
-  <div class="card">
-    <pre>
-This tool was created to simplify the summation of time intervals worked on different charge numbers. It will notify of breaks taken throughout the day and invalid time entries (overlapping entries or non ordered entries).
+<main class="container">
+  <header>
+    <h1>Help</h1>
+    <nav class="nav"><a href="/v2">&larr; Calculator</a></nav>
+  </header>
 
-The time ranges in every line are required to be dashed intervals, comma separated and sorted. An identifier, followed by a space is required at the beginning of each time entry line. See examples below.
+  <section class="card">
+    <h2>Overview</h2>
+    <p>This timecard hour calculator totals time intervals worked on different charge numbers (project codes, WBS codes, or any identifier). It detects breaks between entries and flags invalid or overlapping time ranges.</p>
+    <p>Totals are rounded to the nearest tenth of an hour. When rounding individual charge numbers would cause them to not add up to the correct rounded total, small adjustments are distributed — preferring the charge number closest to rounding the other way, then the one with the most hours. This ensures the breakdown always adds up exactly and no time is lost or over-reported.</p>
+  </section>
 
-Time can be passed in with minutes or frational hours. The fractional hours will be calculated from minutes with precision through the summation. Totals are rounded to the nearest tenth and the subtime entries are ensured to add up to the exact rounded total. In order to do this, subtimes are adjusted to remove any rounding discrepancy. A preference is given to adjust subtimes closest to rounding the other way and then to subtimes with a larger amount of time worked. Rest assured that subtime adjustments do not short the employee any time worked and give the most accurate breakdown of time worked per category while not under or over representing the total hours worked.
+  <section class="card">
+    <h2>Input Format</h2>
+    <p>Each line starts with an identifier (charge number), followed by a space, then one or more dashed time ranges separated by commas. Time ranges within a line must be in chronological order.</p>
 
-The time is computed with two different methods. The first method assumes that the time inputs are ordered by the first time in each line. The second method assumes that lines starting with a PM time are encoded with a 'p' or written in 24 hour format (ie. 'id1 1p-2' or 'id2 13-2' rather than 'id3 1-2'). Note, it is only necessary to encode the first time in a line if it is indeed a PM time. If the two calculation methods compute different results for breaks or totals, both respective results are displayed. It is recommended to format inputs according to one of the calculation methods.
+    <h3>Basic examples</h3>
+    <pre>id1 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6
+id2 8:30-9, 9:30-11, 1-1:42, 3:12-4:12</pre>
 
+    <h3>Time notation</h3>
+    <ul>
+      <li><code>8</code>, <code>8:30</code> — hours and minutes</li>
+      <li><code>8.5</code> — fractional hours (8 hours 30 minutes)</li>
+      <li><code>8a</code>, <code>8am</code> — explicit AM</li>
+      <li><code>3p</code>, <code>3pm</code> — explicit PM</li>
+      <li><code>14</code>, <code>14:30</code> — 24-hour format</li>
+    </ul>
+    <p>Using fractional hours:</p>
+    <pre>id1 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6
+id2 8.5-9, 9.5-11, 1-1.7, 3.2-4.2</pre>
 
-    Example inputs:
+    <h3>PM times</h3>
+    <p>Mark PM times explicitly with <code>p</code> / <code>pm</code> or use 24-hour format:</p>
+    <pre>id1 8-12, 4-5
+id2 12-4
+id3 6p-9       # 'p' suffix marks PM</pre>
+    <pre>id1 8-12, 4-5
+id2 12-4
+id3 18-21      # 24-hour format</pre>
+  </section>
 
-        id1 8-8:30, 9-9:30, 11-1, 1:42-3:12, 4:12-6
-        id2 8:30-9, 9:30-11, 1-1:42, 3:12-4:12
+  <section class="card">
+    <h2>Calculation Methods</h2>
+    <p>The calculator runs four methods across two versions (V1 and V2), each using an ordered or unordered interpretation:</p>
+    <ul>
+      <li><strong>Ordered</strong> — assumes input lines are sorted by first start time. If a line's first time is earlier than the previous line's, PM is automatically inferred.</li>
+      <li><strong>Unordered</strong> — assumes PM times are explicitly marked with <code>p</code>, <code>pm</code>, or written in 24-hour format. Only the first time in a line needs to be marked if it is a PM time.</li>
+    </ul>
+    <p>If the methods produce different results, all results are shown and the disagreement is highlighted. Formatting inputs consistently according to one style avoids ambiguity.</p>
+  </section>
 
-        or
+  <section class="card">
+    <h2>Features</h2>
 
-        id1 8-8.5, 9-9.5, 11-1, 1.7-3.2, 4.2-6
-        id2 8.5-9, 9.5-11, 1-1.7, 3.2-4.2
+    <h3>Target hour tracking</h3>
+    <p>If you need to hit a certain number of hours for the day, entering a target will calculate what time you need to work until. If you've already met the target, it shows when you hit it.</p>
+    <p>You can enter a target two ways:</p>
+    <ul>
+      <li>Use the <strong>Target hours</strong> input field below the time entries on the calculator page.</li>
+      <li>Add <code>\=</code> followed by the number on its own line in the time entries text box.</li>
+    </ul>
+    <pre>id1 8-5p
+\=9.6</pre>
+    <p class="result-label">Target time: 5:34pm</p>
 
-        or
+    <h3>Inline comments</h3>
+    <p>Add notes to any line — text after <code>#</code>, <code>//</code>, or <code>&lt;</code> is ignored:</p>
+    <pre>id1 8-10   # morning work
+id2 10-11  // standup + review
+id3 11-6   &lt;remaining tasks&gt;</pre>
 
-        id1 8-12, 4-5
-        id2 12-4
-        id3 6p-9
+    <h3>Leading zeros (24-hour disambiguation)</h3>
+    <p>In ordered mode, a leading zero marks a time as unambiguous 24-hour so PM is not inferred:</p>
+    <pre>id1 11-14, 15:30-17:55
+id2 09-11, 14-15:30     # '09' is treated as 9 AM, not inferred as PM</pre>
 
-        or
+    <h3>Multi-word identifiers</h3>
+    <p>Charge numbers with spaces are detected automatically — everything before the first time range is used as the identifier:</p>
+    <pre>project alpha 8-10      # ID: "project alpha"
+my task: 10-12          # ID: "my task:"</pre>
 
-        id1 8-12, 4-5
-        id2 12-4
-        id3 18-9
+    <h3>Repeating identifiers</h3>
+    <p>Using the same charge number on multiple lines combines the time ranges:</p>
+    <pre>id1 8-10
+id2 10-12
+id1 12-1       # combined with the first id1 line; total id1 = 3.0 hrs</pre>
+  </section>
 
+  <section class="card">
+    <h2>Keyboard Shortcuts</h2>
+    <p><span class="kbd">Shift</span> + <span class="kbd">Enter</span> or <span class="kbd">Ctrl</span> + <span class="kbd">Enter</span> submits the form without clicking Calculate.</p>
+  </section>
 
-    Example outputs:
-
-        totals
-        id1 = 3.7 hrs
-        id2 = 6.3 hrs
-        total: 10.0
-
-        or
-
-        breaks
-        12:00p-1:00p = 1.0 hr
-
-        totals
-        id1 = 4.0 hr
-        total: 4.0 hr
-
-        or
-
-        totals
-        id1 = 5.0 hr
-        id2 = 4.0 hr
-        id3 = 3.0 hr
-        total: 12.0 hr
-
-
-    Encodings:
-
-    Target hours can be specified by encoding a new line with \= or \==
-        id1 8-5p
-        \=9.6
-
-        Target time: 5:34pm
-
-    Inline comment notes are supported in three formats
-        id1 8-10  # comment
-        id2 10-11 //comment
-        id3 11-6 &lt;comment&gt;
-
-
-If you notice a calculation error, please <a href="mailto:7daniel49@gmail.com">contact</a> the maintainer with the time input or submit a pull request.
-
-<a href="https://github.com/danielfrentzel/spacetime-calculator">Source</a>
-    </pre>
-  </div>
-</div>
+  <section class="card">
+    <h2>Contact</h2>
+    <p>If you notice a calculation error, please <a href="mailto:7daniel49@gmail.com">contact the maintainer</a> with the time input that produced the incorrect result.</p>
+  </section>
+</main>
 </body>
 </html>

@@ -115,8 +115,8 @@ subtime_rounding_calcs = [
         })),
 ]
 
-invalid_calcs = [('a 7:50-8:15\n b 8:15-8:36\n c 8:36-11:10, 12-6:33\n a 11:10-12',
-                  'Repeated identifier: a. Combine hours or use unique identifiers.')]
+invalid_calcs = [('a 7-8\n b 7-8',
+                  'Double charging or invalid range: 7.0-8.0. Ensure lines starting with a PM time are written in 24 hour format.')]
 
 target_time_calcs = [
     (
@@ -223,6 +223,7 @@ def test_subtime_rounding_calcs(hour_calculator, hours, expected):
 def test_invalid_calcs(hour_calculator, hours, exception):
     try:
         hour_calculator(hours).calculate()
+        assert False, "Expected an exception but none was raised"
     except Exception as e:
         assert str(e) == exception
 

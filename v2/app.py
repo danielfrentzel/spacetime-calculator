@@ -51,16 +51,25 @@ def index():
     v2_unordered_breaks = []
     v2_unordered_error = None
     methods_differ = False
+    target_input = ""
 
     if request.method == "POST":
         input_text = request.form.get("input", "")
+        target_input = request.form.get("target", "").strip()
+        calc_text = input_text
+        if target_input:
+            try:
+                float(target_input)
+                calc_text = input_text.rstrip() + f"\n\\={target_input}"
+            except ValueError:
+                pass  # ignore non-numeric target input
         try:
             log.debug('=' * 72)
             log.debug('NEW REQUEST')
-            log.debug('Raw input:\n%s', input_text)
+            log.debug('Raw input:\n%s', calc_text)
             log.debug('-' * 72)
 
-            raw, raw_breaks, metadata = process_input(input_text, ordered=True)
+            raw, raw_breaks, metadata = process_input(calc_text, ordered=True)
 
             total = raw.pop('$total', 0)
             results = raw
@@ -75,10 +84,12 @@ def index():
 
         # v2 unordered — runs independently so a primary failure doesn't block it
         try:
-            raw_ord, raw_ord_breaks, _ = process_input(input_text, ordered=False)
+            raw_ord, raw_ord_breaks, unordered_meta = process_input(calc_text, ordered=False)
             v2_unordered = {k: v for k, v in raw_ord.items() if k != '$total'}
             v2_unordered_total = raw_ord.get('$total', 0)
             v2_unordered_breaks = [_format_break_display(b) for b in raw_ord_breaks]
+            if not detected_ids:
+                detected_ids = unordered_meta.get('detected_ids', [])
             if results is not None and (v2_unordered != results or v2_unordered_total != total):
                 order_warning = dict(v2_unordered)
                 order_warning['Total'] = v2_unordered_total
@@ -89,7 +100,7 @@ def index():
             v2_unordered_error = str(e)
 
         # Run v1 (HourCalculator) calculations on the same input
-        v1_input = input_text.replace('\\n', '\n')
+        v1_input = calc_text.replace('\\n', '\n')
         try:
             h, b, _ = HourCalculator(v1_input).calculate(ordered=True)
             v1_ordered_total = h.pop('$total', 0)
@@ -115,7 +126,8 @@ def index():
         if all_ids or any([error, v2_unordered_error, v1_ordered_error, v1_unordered_error]):
             log.debug('-' * 72)
             log.debug('SUMMARY')
-            col_w = max((len(k) for k in all_ids), default=4) + 2
+            col_w = max([len(k) for k in all_ids] + [len('Total')], default=4) + 2
+            print(col_w)
             col_v = 12
             sep = '-' * (col_w + col_v * 3 + 18)
             log.debug('  %-*s  %-*s  %-*s  %-*s  %s', col_w, 'ID', col_v, 'V2 Ord', col_v, 'V2 Unord', col_v,
@@ -186,6 +198,7 @@ def index():
     return render_template(
         'v2/index.html',
         input_text=input_text,
+        target_input=target_input,
         results=results,
         total=total,
         breaks=breaks,

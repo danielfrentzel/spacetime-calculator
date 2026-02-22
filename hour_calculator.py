@@ -170,6 +170,7 @@ class HourCalculator(object):
                     self.hours[str_id] = times
                 self.charges[str_id] = 0
             except ValueError as e:
+                print(e)
                 raise e
 
     def _convert_ordered_starts(self):
@@ -294,7 +295,6 @@ class HourCalculator(object):
         """
         Return the 12 hour format time required to fulfill target hours.
         """
-        print('(_eval_target_time)')
 
         if not self._target_hours:
             return
@@ -317,21 +317,24 @@ class HourCalculator(object):
         """
         Calculate hours worked from time input.
         """
-        if ordered:
-            print('Calculating ordered')
-            self._parse_hour_input()
-            self._convert_ordered_starts()
-            self._convert_mil_times()
-            # print('ordered:', self)
-            self._determine_last_time()
-            self._calculate_charges()
-        else:
-            print('Calculating unordered')
-            self._parse_hour_input()
-            self._convert_mil_times()
-            # print('unordered:', self)
-            self._determine_last_time()
-            self._calculate_charges()
+        try:
+            if ordered:
+                print('Calculating ordered')
+                self._parse_hour_input()
+                self._convert_ordered_starts()
+                self._convert_mil_times()
+                # print('ordered:', self)
+                self._determine_last_time()
+                self._calculate_charges()
+            else:
+                print('Calculating unordered')
+                self._parse_hour_input()
+                self._convert_mil_times()
+                # print('unordered:', self)
+                self._determine_last_time()
+                self._calculate_charges()
+        except Exception as e:
+            raise e
 
         # print('charges:', self.charges)
 
